@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 400;
+	src: url(https://cdn.jsdelivr.net/fontsource/fonts/google-sans@latest/latin-400-normal.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 500;
+	src: url(https://cdn.jsdelivr.net/fontsource/fonts/google-sans@latest/latin-500-normal.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 600;
+	src: url(https://cdn.jsdelivr.net/fontsource/fonts/google-sans@latest/latin-600-normal.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Google Sans';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 700;
+	src: url(https://cdn.jsdelivr.net/fontsource/fonts/google-sans@latest/latin-700-normal.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+	color-scheme: dark;
+
+	--radius: 8px;
+
+	--background: #313338;
+	--foreground: #FAFAFA;
+
+	--card: #1E1F22;
+	--card-foreground: #FAFAFA;
+
+	--popover: #2B2D31;
+	--popover-foreground: #FAFAFA;
+
+	--primary: #43b8b0;
+	--primary-foreground: #FFFFFF;
+
+	--secondary: #2B2D31;
+	--secondary-foreground: #FAFAFA;
+
+	--muted: #393C43;
+	--muted-foreground: #94A3B8;
+
+	--accent: #393C43;
+	--accent-foreground: #FAFAFA;
+
+	--destructive: #7F1D1D;
+
+	--border: #282A2E;
+	--input: #393C43;
+	--ring: #43b8b0;
+
+	--sidebar: #1E1F22;
+	--sidebar-foreground: #FAFAFA;
+	--sidebar-primary: #1E1F22;
+	--sidebar-primary-foreground: #FAFAFA;
+	--sidebar-accent: #2B2D31;
+	--sidebar-accent-foreground: #FAFAFA;
+	--sidebar-border: #282A2E;
+	--sidebar-ring: #43b8b0;
+
+	--surface: #2B2D31;
+	--surface-elevated: #313338;
+	--surface-hover: #383A40;
+	--border-subtle: #282A2E;
+
+	--lag-primary: #313338;
+	--lag-primary-hover: #383A40;
+	--lag-accent: #43b8b0;
+	--lag-accent-dim: rgba(67, 184, 176, 0.12);
+
+	--text-primary: #FAFAFA;
+	--text-secondary: #94A3B8;
+	--text-muted: #555555;
+
+	--lag-danger: #e62a3c;
+	--lag-danger-hover: #ef4f5f;
+	--lag-danger-dim: rgba(230, 42, 60, 0.12);
+	--lag-success: #34d399;
+	--lag-success-dim: rgba(52, 211, 153, 0.12);
+	--lag-warning: #f0b429;
+
+	--font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
+	--font-heading: 'Google Sans', system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+	--transition-fast: 100ms ease;
+	--transition-normal: 180ms ease;
+}
+
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-surface: var(--surface);
+	--color-surface-elevated: var(--surface-elevated);
+	--color-surface-hover: var(--surface-hover);
+	--color-border-subtle: var(--border-subtle);
+	--color-lag-primary: var(--lag-primary);
+	--color-lag-primary-hover: var(--lag-primary-hover);
+	--color-lag-accent: var(--lag-accent);
+	--color-lag-accent-dim: var(--lag-accent-dim);
+	--color-text-primary: var(--text-primary);
+	--color-text-secondary: var(--text-secondary);
+	--color-text-muted: var(--text-muted);
+	--color-lag-danger: var(--lag-danger);
+	--color-lag-danger-hover: var(--lag-danger-hover);
+	--color-lag-danger-dim: var(--lag-danger-dim);
+	--color-lag-success: var(--lag-success);
+	--color-lag-success-dim: var(--lag-success-dim);
+	--color-lag-warning: var(--lag-warning);
+
+	--font-body: var(--font-body);
+	--font-heading: var(--font-heading);
+	--font-mono: var(--font-mono);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	body {
+		@apply bg-background text-foreground font-body;
+		font-size: 16px;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-rendering: optimizeLegibility;
+		letter-spacing: -0.01em;
+		line-height: 1.6;
+	}
+
+	::selection {
+		background-color: rgba(67, 184, 176, 0.25);
+		color: #fff;
+	}
+
+	::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: var(--border);
+		border-radius: 4px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--primary);
+	}
+
+	h1, h2, h3 {
+		font-family: var(--font-heading);
+		font-weight: 400;
+		letter-spacing: -0.02em;
+	}
+
+	button,
+	a,
+	input,
+	textarea,
+	select {
+		transition-duration: 160ms;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 0;
+	}
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes speaking-pulse {
+	0%, 100% { box-shadow: 0 0 0 0 rgba(67, 184, 176, 0.4); }
+	50% { box-shadow: 0 0 0 4px rgba(67, 184, 176, 0); }
+}

@@ -1,0 +1,18 @@
+services:
+  lag:
+    build: .
+    ports:
+      - "3000:3000"
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50200:50000-50200/udp"
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      EXTERNAL_IP: ${EXTERNAL_IP:-127.0.0.1}
+      LAG_VOICE_KEY: ${LAG_VOICE_KEY:-devkey}
+      LAG_VOICE_SECRET: ${LAG_VOICE_SECRET:-secret}
+    volumes:
+      - lag_data:/var/lib/postgresql/data
+
+volumes:
+  lag_data:

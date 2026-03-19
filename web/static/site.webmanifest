@@ -1,0 +1,11 @@
+{
+	"name": "Lag",
+	"short_name": "Lag",
+	"icons": [
+		{ "src": "/favicon-192.png", "type": "image/png", "sizes": "192x192" },
+		{ "src": "/favicon-512.png", "type": "image/png", "sizes": "512x512" }
+	],
+	"theme_color": "#080808",
+	"background_color": "#080808",
+	"display": "standalone"
+}
