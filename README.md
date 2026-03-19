@@ -3,6 +3,7 @@
   <source media="(prefers-color-scheme: light)" srcset="https://trylag.com/lag_logo_trimmed_light_mode.png">
   <img src="https://trylag.com/lag_logo_trimmed_dark_mode.png" alt="Lag" width="200">
 </picture>
+
 # Lag Self-Hosted
 
 Run your own Lag voice communication space. Single container, zero external dependencies - PostgreSQL, voice server, API, and web UI all bundled in one image.
