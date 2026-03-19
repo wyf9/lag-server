@@ -28,7 +28,7 @@ Paste any errors from the browser developer console (F12 > Console)
 ```
 
 **Environment**
-- Image tag: `ghcr.io/trylag/lag:...`
+- Image tag: `ghcr.io/lag-app/self-host:...`
 - Runtime: Docker / Podman / nerdctl
 - OS:
 - Browser:

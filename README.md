@@ -35,8 +35,8 @@ Open `http://localhost:3000` - enter a nickname and start talking.
 ### Build from source
 
 ```bash
-git clone https://github.com/trylag/lag.git
-cd lag/self-hosting
+git clone https://github.com/lag-app/self-host.git
+cd self-host
 ./scripts/<runtime>.sh build
 ```
 
@@ -107,7 +107,7 @@ LAG_IMAGE=lag LAG_NAME=my-lag ./scripts/<runtime>.sh up
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `LAG_IMAGE` | `ghcr.io/trylag/lag:latest` | Container image to use |
+| `LAG_IMAGE` | `ghcr.io/lag-app/self-host:latest` | Container image to use |
 | `LAG_NAME` | `lag` | Container name |
 
 ## Ports

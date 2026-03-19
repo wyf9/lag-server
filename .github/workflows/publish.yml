@@ -29,8 +29,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/trylag/lag:latest
-            ghcr.io/trylag/lag:${{ github.ref_name }}
+            ghcr.io/lag-app/self-host:latest
+            ghcr.io/lag-app/self-host:${{ github.ref_name }}
 
       - name: Generate release notes
         id: notes
@@ -53,7 +53,7 @@ jobs:
             -p 50000-50200:50000-50200/udp \
             -v lag_data:/var/lib/postgresql/data \
             -e EXTERNAL_IP=YOUR_SERVER_IP \
-            ghcr.io/trylag/lag:${{ github.ref_name }}
+            ghcr.io/lag-app/self-host:${{ github.ref_name }}
           ```
 
           Open `http://YOUR_SERVER_IP:3000`

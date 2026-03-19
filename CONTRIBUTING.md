@@ -5,7 +5,7 @@ Thanks for your interest in contributing! Here's how to get started.
 ## Development Setup
 
 ```bash
-git clone https://github.com/trylag/lag.git
+git clone https://github.com/lag-app/self-host.git
 cd lag/self-hosting
 podman compose up -d --build
 # or: docker compose up -d --build

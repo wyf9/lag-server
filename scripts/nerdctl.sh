@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${LAG_IMAGE:-ghcr.io/trylag/lag:latest}"
+IMAGE="${LAG_IMAGE:-ghcr.io/lag-app/self-host:latest}"
 NAME="${LAG_NAME:-lag}"
 ACTION="${1:-up}"
 
