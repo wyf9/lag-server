@@ -52,6 +52,9 @@ inventory/*.yml
 # Docker
 docker-compose.override.yml
 
+# SvelteKit
+.svelte-kit/
+
 # Node / JS
 node_modules/
 dist/
