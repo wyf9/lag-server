@@ -10,7 +10,7 @@ Run your own Lag voice communication space. Single container, zero external depe
 
 # Things to Note
 
-The voice server will be using live kit. We are planning on releasing the voice system we have built. We have yet to finalise all thats functionality and we will be releasing this when it is feature complete.ß
+The voice server will be using live kit. We are planning on releasing the voice system we have built. We have yet to finalise all thats functionality and we will be releasing this when it is feature complete.
 
 ## Quick Start
 
