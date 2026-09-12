@@ -7,7 +7,7 @@
 - Verify `EXTERNAL_IP`, DNS, TLS/WSS, firewall, NAT, and off-network UDP media.
 - Keep `3001`, `3002`, and `5432` private.
 - Keep `GUEST_ENABLED=false` unless nickname guests are intentional; audit `platform_admin` grants after bootstrap.
-- Pin a reviewed source commit or `<FORK_IMAGE>` digest; do not rely on an inherited floating image tag.
+- Pin a reviewed source commit or `ghcr.io/wyf9/lag-server` digest; do not rely on the floating `latest` tag.
 
 ## Health and logs
 
@@ -18,7 +18,7 @@ curl --fail https://your-host.example/api/health
 docker compose logs --follow
 ```
 
-Monitor container restarts, HTTP error/latency, WebSocket disconnects, disk use, PostgreSQL health, backup age, certificate expiry, and actual synthetic voice connectivity. Avoid retaining tokens or unnecessary personal data in proxy logs; WebSocket URLs contain session tokens.
+Monitor container restarts, HTTP error/latency, WebSocket disconnects, disk use, PostgreSQL health, backup age, certificate expiry, and actual synthetic voice connectivity. Avoid retaining cookies, OAuth callback parameters, or unnecessary personal data in proxy logs; WebSockets authenticate with the session cookie.
 
 ## Backup and restore
 
@@ -44,7 +44,7 @@ Back up the secret values separately. Encrypt backups, define retention, and reg
 
 **UI works, voice does not:** verify browser console mixed-content errors, `EXTERNAL_IP`, TCP `7880-7881`, UDP range forwarding, and matching voice key/secret. Test from outside the server LAN.
 
-**Sessions fail after restart:** verify the persistent PostgreSQL volume is mounted and inspect `sessions` expiry/revocation state. Current sessions are opaque database records; inherited `SESSION_SECRET` configuration does not control them.
+**Sessions fail after restart:** verify the persistent PostgreSQL volume is mounted and inspect `sessions` expiry/revocation state. Current sessions are opaque database records.
 
 **502 from the gateway:** inspect API and web process logs plus PostgreSQL readiness. `/api/health` through port `3000` tests gateway-to-API routing.
 
@@ -52,4 +52,4 @@ Back up the secret values separately. Encrypt backups, define retention, and reg
 
 ## Incident response
 
-Contain access, preserve relevant sanitized evidence, rotate exposed provider/voice secrets, revoke affected database sessions, and verify database integrity and role grants. Report product vulnerabilities through `<SECURITY_CONTACT>` once the maintainer publishes it; never put exploitable details in a public issue.
+Contain access, preserve relevant sanitized evidence, rotate exposed provider/voice secrets, revoke affected database sessions, and verify database integrity and role grants. Report product vulnerabilities to `security@wyf9.top`; never put exploitable details in a public issue.

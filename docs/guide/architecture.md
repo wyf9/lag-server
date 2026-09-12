@@ -19,7 +19,7 @@ s6-overlay supervises PostgreSQL, LiveKit, API, and web processes. PostgreSQL in
 
 ## Data and state
 
-PostgreSQL stores users, external identities, opaque sessions, OAuth transactions, role grants, room policy/membership, invitations/bans, audit events, and messages. The `lag_data` volume holds database files; inherited image startup may also create a `.session_secret`, but current opaque sessions do not use it. WebSocket connections and subscriptions are process memory, so they disappear on restart and are not shared among API replicas.
+PostgreSQL stores users, external identities, opaque sessions, OAuth transactions, role grants, room policy/membership, invitations/bans, audit events, and messages. The `lag_data` volume holds database files. WebSocket connections and subscriptions are process memory, so they disappear on restart and are not shared among API replicas.
 
 LiveKit carries realtime voice/media. The API signs short-lived participant grants with `LAG_VOICE_KEY` and `LAG_VOICE_SECRET`; the bundled LiveKit process starts with the same values.
 

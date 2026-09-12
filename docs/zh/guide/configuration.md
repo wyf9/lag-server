@@ -1,6 +1,6 @@
 # 配置
 
-通过 Compose `environment`、`docker run -e` 或密钥管理系统传递参数。不要提交 `.env` 文件。当前 API 缺少提供商、origin 或数据库必需值时会启动失败；继承的 Compose 文件尚未提供全部必需值。
+通过 Compose `environment`、`docker run -e` 或密钥管理系统传递参数。不要提交 `.env` 文件。当前 API 缺少提供商、origin 或数据库必需值时会启动失败；仓库内默认值仅为开发示例，不适用于生产环境。
 
 ## 核心与网络
 
@@ -36,7 +36,7 @@
 | `AUTH_ADMIN_CLAIM_PATH` | 未设置 | 管理员 claim 点路径 |
 | `AUTH_ADMIN_CLAIM_VALUE` | 未设置 | 精确预期值/数组成员 |
 
-提供商特定变量见 [Prism、OIDC 与 OAuth](./authentication)。`SESSION_SECRET` 仍存在于继承的部署文件，但当前不透明数据库会话实现不会使用它。
+提供商特定变量见 [Prism、OIDC 与 OAuth](./authentication)。会话是不透明数据库记录，浏览器会话不使用签名密钥配置。
 
 ## 最小 OIDC 示例
 
@@ -54,6 +54,6 @@ EXTERNAL_IP=203.0.113.10
 
 使用部署密钥系统。轮换语音凭据时，API 与 LiveKit 必须使用匹配值一起重启。现有应用会话以哈希后的不透明 token 保存在 PostgreSQL，并按会话设置过期。
 
-## 镜像占位符
+## 容器镜像
 
-本分支规范镜像仍为 `<FORK_IMAGE>`。维护者发布镜像仓库归属与来源策略前请本地构建。便捷脚本含继承的默认镜像；只有使用已审核分支镜像时才覆盖 `LAG_IMAGE=<FORK_IMAGE>`。
+本分支规范镜像为 `ghcr.io/wyf9/lag-server`。便捷脚本默认使用 `latest`；生产环境请通过 `LAG_IMAGE` 固定已审核的版本标签或不可变摘要。

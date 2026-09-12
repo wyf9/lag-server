@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository is an independently maintained fork of a small self-hosted voice and chat application. It favors a simple, single-container deployment over distributed scaling. It is not the upstream hosted service. Fork ownership, canonical repository URL, image registry, maintainer identity, and private security contact are intentionally unresolved placeholders documented in `README.md`.
+This repository is an independently maintained fork of Lag's self-hosted voice and chat application. It favors a simple, single-container deployment over distributed scaling and is not the upstream hosted service. The canonical repository is `https://github.com/wyf9/lag-server`, the image is `ghcr.io/wyf9/lag-server`, documentation is at `https://lag.p.wyf9.top`, and security reports go to `security@wyf9.top`. Copyright in the original project remains with Lag, and this fork is modified and distributed under the MIT License.
 
 ## Runtime architecture
 
@@ -28,17 +28,17 @@ The API auto-applies its schema at startup. The all-in-one image assumes local l
 - `web/`: SvelteKit/Svelte 5 client and Node adapter output.
 - `api/`: Fastify 5 API, Drizzle schema, session signing, WebSocket state, and LiveKit token issuance.
 - `s6/`, `Dockerfile`, `entrypoint-web.js`, `livekit.yaml`: all-in-one runtime and process wiring.
-- `scripts/`, `docker-compose.yml`: convenience deployment paths. Their inherited default image is not yet the canonical image for this fork.
+- `scripts/`, `docker-compose.yml`: convenience deployment paths using the fork's GHCR image or a local build.
 - `docs/`: bilingual VitePress operator/developer documentation and its separate Bun toolchain.
 
 ## Operational invariants
 
 - `LAG_VOICE_KEY` and `LAG_VOICE_SECRET` must match between API token issuance and LiveKit runtime generation.
-- Sessions are opaque database records with idle and absolute expiry; secure cookies require HTTPS. `SESSION_SECRET` remains part of inherited deployment files but is not consumed by the current session implementation.
+- Sessions are opaque database records with idle and absolute expiry; secure cookies require HTTPS.
 - Remote RTC requires an externally reachable address and correct TCP/UDP firewall/NAT rules; HTTPS alone does not carry LiveKit UDP media.
 - PostgreSQL is the durable source of truth. In-memory WebSocket connection/subscription state is lost on API restart and is not shared across replicas.
 - The current topology is not horizontally scalable without redesigning state, database/service topology, and LiveKit routing.
 
 ## Documentation rule
 
-Document observed behavior separately from proposed integrations. Never present an unimplemented environment variable, role, identity claim, endpoint, image, repository, contact, or scaling property as available. Use explicit `<PLACEHOLDER>` values until maintainers decide them. Keep English and Chinese pages equivalent in meaning.
+Document observed behavior separately from proposed integrations. Never present an unimplemented environment variable, role, identity claim, endpoint, or scaling property as available. Keep English and Chinese pages equivalent in meaning and preserve the fork identity and Lag copyright statement.

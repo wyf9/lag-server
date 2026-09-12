@@ -2,15 +2,17 @@
 
 ## Build and start
 
-Until `<FORK_IMAGE>` is published, build the checked-out source:
+Build the checked-out source:
 
 ```bash
-# First supply ALLOWED_HOSTS, AUTH_PROVIDER, provider-specific values,
-# AUTH_CLIENT_ID, and ALLOWED_HOSTS through your deployment environment.
+# First supply ALLOWED_HOSTS, AUTH_PROVIDER, AUTH_CLIENT_ID, and
+# provider-specific values through your deployment environment.
 docker compose up -d --build
 docker compose ps
 curl --fail http://localhost:3000/api/health
 ```
+
+Alternatively, use the published image `ghcr.io/wyf9/lag-server:latest`. Pin a release tag or digest for production rather than relying on `latest`.
 
 Persist `/var/lib/postgresql/data` on durable storage. The bundled topology is intended for one container, not Kubernetes-style independent replicas. The checked-in Compose file is not a complete production configuration and currently omits required authentication values.
 

@@ -48,7 +48,7 @@ export interface AudioSettings {
 	bitrate: number;
 }
 
-const AUDIO_SETTINGS_KEY = 'lag:self-host:audio-settings';
+const AUDIO_SETTINGS_KEY = 'lag-server:audio-settings';
 
 const defaultAudioSettings: AudioSettings = {
 	echoCancellation: true,

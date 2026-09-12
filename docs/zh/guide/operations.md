@@ -7,7 +7,7 @@
 - 验证 `EXTERNAL_IP`、DNS、TLS/WSS、防火墙、NAT 与外部网络 UDP 媒体。
 - 保持 `3001`、`3002` 和 `5432` 私有。
 - 除非明确需要昵称访客，否则保持 `GUEST_ENABLED=false`；启动后审核 `platform_admin` grant。
-- 固定到已审核的源码提交或 `<FORK_IMAGE>` 摘要；不要依赖继承的浮动镜像标签。
+- 固定到已审核的源码提交或 `ghcr.io/wyf9/lag-server` 镜像摘要；不要依赖浮动的 `latest` 标签。
 
 ## 健康检查与日志
 
@@ -18,7 +18,7 @@ curl --fail https://your-host.example/api/health
 docker compose logs --follow
 ```
 
-监控容器重启、HTTP 错误与延迟、WebSocket 断线、磁盘使用、PostgreSQL 健康、备份时效、证书到期和实际合成语音连接。避免在代理日志中长期保存 token 或不必要的个人数据；WebSocket URL 中包含会话 token。
+监控容器重启、HTTP 错误与延迟、WebSocket 断线、磁盘使用、PostgreSQL 健康、备份时效、证书到期和实际合成语音连接。避免在代理日志中长期保存 Cookie、OAuth 回调参数或不必要的个人数据；WebSocket 使用会话 Cookie 认证。
 
 ## 备份与恢复
 
@@ -44,7 +44,7 @@ docker exec -i lag su - postgres -c "psql lag" < lag.sql
 
 **UI 正常但语音失败：**检查浏览器控制台混合内容错误、`EXTERNAL_IP`、TCP `7880-7881`、UDP 范围转发以及匹配的语音 key/secret；从局域网外测试。
 
-**重启后会话失败：**确认 PostgreSQL 持久化卷已挂载，并检查 `sessions` 的过期/撤销状态。当前会话是不透明数据库记录；继承的 `SESSION_SECRET` 配置不会控制它们。
+**重启后会话失败：**确认 PostgreSQL 持久化卷已挂载，并检查 `sessions` 的过期/撤销状态。当前会话是不透明数据库记录。
 
 **网关返回 502：**查看 API、Web 进程日志与 PostgreSQL 就绪状态。通过端口 `3000` 请求 `/api/health` 可测试网关到 API 的路由。
 
@@ -52,4 +52,4 @@ docker exec -i lag su - postgres -c "psql lag" < lag.sql
 
 ## 事件响应
 
-隔离访问、保留经过脱敏的相关证据、轮换泄漏的提供商/语音密钥、撤销受影响数据库会话，并验证数据库完整性与角色 grant。维护者公布 `<SECURITY_CONTACT>` 后通过该渠道报告产品漏洞，绝不要在公开 issue 中提交可利用细节。
+隔离访问、保留经过脱敏的相关证据、轮换泄漏的提供商/语音密钥、撤销受影响数据库会话，并验证数据库完整性与角色 grant。请将产品漏洞报告发送至 `security@wyf9.top`，绝不要在公开 issue 中提交可利用细节。

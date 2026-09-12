@@ -15,5 +15,5 @@ The default build is one container with a web gateway, Fastify API, PostgreSQL, 
 5. [Development](./development) for source builds and validation.
 
 ::: danger Production warning
-The compose defaults `devkey` and `secret` are insecure, and the inherited Compose file omits required identity-provider settings. Configure authentication and secrets before internet exposure; enable nickname guests only deliberately.
+The Compose defaults `devkey` and `secret` are insecure, and its identity-provider values are development examples. Configure real authentication and secrets before internet exposure; enable nickname guests only deliberately.
 :::

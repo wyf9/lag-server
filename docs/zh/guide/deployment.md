@@ -2,15 +2,17 @@
 
 ## 构建并启动
 
-在 `<FORK_IMAGE>` 发布前，从已检出的源码构建：
+从已检出的源码构建：
 
 ```bash
-# 先通过部署环境提供 ALLOWED_HOSTS、AUTH_PROVIDER、提供商特定值、
-# AUTH_CLIENT_ID 与 ALLOWED_HOSTS。
+# 先通过部署环境提供 ALLOWED_HOSTS、AUTH_PROVIDER、AUTH_CLIENT_ID
+# 与提供商特定值。
 docker compose up -d --build
 docker compose ps
 curl --fail http://localhost:3000/api/health
 ```
+
+也可以使用已发布镜像 `ghcr.io/wyf9/lag-server:latest`。生产环境应固定版本标签或摘要，不要依赖 `latest`。
 
 将 `/var/lib/postgresql/data` 放在持久化存储上。内置拓扑面向单容器，而非 Kubernetes 风格的独立副本。仓库中的 Compose 文件不是完整生产配置，目前缺少必需认证值。
 

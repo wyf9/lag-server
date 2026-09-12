@@ -6,12 +6,12 @@ Contributions to this independent fork are welcome. 本独立分支欢迎贡献�
 
 1. Read [CONTEXT.md](CONTEXT.md) and the [development guide](docs/guide/development.md).
 2. Create a focused branch from the repository's default branch.
-3. Do not silently restore upstream domains, images, contacts, branding, or repository links. Use an explicit placeholder when the fork's value is undecided.
+3. Keep fork links and identifiers aligned with `https://github.com/wyf9/lag-server`, `ghcr.io/wyf9/lag-server`, `https://lag.p.wyf9.top`, and `security@wyf9.top`.
 4. Keep secrets out of commits, examples, logs, screenshots, and fixtures.
 
 1. 阅读 [CONTEXT.md](CONTEXT.md) 与[开发指南](docs/zh/guide/development.md)。
 2. 从仓库默认分支创建目标单一的分支。
-3. 不要擅自恢复上游域名、镜像、联系方式、品牌或仓库链接；本分支的值未确定时使用明确占位符。
+3. 保持分支链接和标识与 `https://github.com/wyf9/lag-server`、`ghcr.io/wyf9/lag-server`、`https://lag.p.wyf9.top` 和 `security@wyf9.top` 一致。
 4. 不要在提交、示例、日志、截图或测试数据中包含密钥。
 
 ## Local validation / 本地验证
@@ -50,6 +50,6 @@ Run the checks relevant to your change and report exact results in the pull requ
 - 不要把无关的格式化或重构混入功能改动。
 - 贡献内容采用仓库的 [MIT License](LICENSE)。
 
-## Issues and conduct / Issue 与行为准则
+## Issues / Issue
 
-Search existing issues before filing. Include versions, deployment topology, sanitized configuration, reproduction steps, expected/actual behavior, and relevant logs. Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), but note that inherited contact details remain subject to the replacement checklist in [README.md](README.md).
+Search existing issues before filing. Include versions, deployment topology, sanitized configuration, reproduction steps, expected/actual behavior, and relevant logs.

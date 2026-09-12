@@ -6,8 +6,8 @@ These instructions apply to the entire repository. Read `CONTEXT.md` before chan
 
 ## Safety and provenance
 
-- This is an independent fork. Do not reintroduce inherited upstream repository, image, domain, maintainer, or contact values as if they belong to this fork.
-- Preserve unresolved values as explicit placeholders such as `<FORK_REPOSITORY_URL>`, `<FORK_IMAGE>`, `<MAINTAINER_NAME>`, and `<SECURITY_CONTACT>`.
+- This is an independent fork. Canonical values are `https://github.com/wyf9/lag-server`, `ghcr.io/wyf9/lag-server`, `https://lag.p.wyf9.top`, and `security@wyf9.top`; do not reintroduce inherited upstream values.
+- Preserve Lag's copyright notice and describe this fork as permitted and distributed under the repository's MIT License.
 - Never commit secrets. Use obvious non-production examples and label insecure defaults.
 - Describe Prism, OIDC, OAuth, room roles, and platform-administrator behavior only to the extent currently enforced by code. Do not claim multi-provider login, a complete administrator console, horizontal scaling, or other absent capabilities.
 

@@ -2,7 +2,7 @@
 
 API 要求通过 `AUTH_PROVIDER` 选择且仅选择一种提供商：`prism`、`oidc` 或 `oauth2`。它使用 Authorization Code 流程，在 PostgreSQL 保存一次性 state，支持 PKCE，将提供商 subject 映射到本地用户，并创建服务端不透明会话。安全会话和 CSRF Cookie 要求 HTTPS。
 
-当前 Web 客户端可能尚未提供 API 新增的全部登录与管理界面。请验证所部署版本的浏览器体验。
+当前 Web 客户端提供登录、房间权限与平台管理界面；部署前仍应验证实际身份提供商和浏览器流程。
 
 ## 通用注册
 

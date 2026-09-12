@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${LAG_IMAGE:-}"
+IMAGE="${LAG_IMAGE:-ghcr.io/wyf9/lag-server:latest}"
 NAME="${LAG_NAME:-lag}"
 ACTION="${1:-up}"
 
 run_container() {
-  if [ -z "$IMAGE" ]; then
-    echo "LAG_IMAGE is required; use '$0 build' to build this checkout" >&2
-    exit 1
-  fi
-
   local optional_env=()
   [ -n "${PROXY_HEADER:-}" ] && optional_env+=(-e "PROXY_HEADER=$PROXY_HEADER")
   [ -n "${AUTH_ADMIN_CLAIM_PATH:-}" ] && optional_env+=(-e "AUTH_ADMIN_CLAIM_PATH=$AUTH_ADMIN_CLAIM_PATH")

@@ -1,6 +1,6 @@
 # Configuration
 
-Pass values through Compose `environment`, `docker run -e`, or a secret manager. Avoid committing `.env` files. The current API fails startup unless provider, origin, and database requirements are present; inherited Compose files do not yet supply all of them.
+Pass values through Compose `environment`, `docker run -e`, or a secret manager. Avoid committing `.env` files. The current API fails startup unless provider, origin, and database requirements are present; checked-in defaults are development examples and are not suitable for production.
 
 ## Core and network
 
@@ -36,7 +36,7 @@ Pass values through Compose `environment`, `docker run -e`, or a secret manager.
 | `AUTH_ADMIN_CLAIM_PATH` | Unset | Dot path for administrator claim |
 | `AUTH_ADMIN_CLAIM_VALUE` | Unset | Exact expected value/array member |
 
-Provider-specific variables are covered in [Prism, OIDC, and OAuth](./authentication). `SESSION_SECRET` remains in inherited deployment files but the current opaque database session implementation does not consume it.
+Provider-specific variables are covered in [Prism, OIDC, and OAuth](./authentication). Sessions are opaque database records; browser sessions do not use a signing-secret setting.
 
 ## Minimal OIDC example
 
@@ -54,6 +54,6 @@ EXTERNAL_IP=203.0.113.10
 
 Use a deployment secret mechanism. Rotating voice credentials requires API and LiveKit to restart with matching values. Existing application sessions are stored as hashed opaque tokens in PostgreSQL and expire according to the session settings.
 
-## Image placeholder
+## Container image
 
-The fork's canonical image remains `<FORK_IMAGE>`. Build locally until maintainers publish registry ownership and provenance. Convenience scripts contain an inherited image default; override `LAG_IMAGE=<FORK_IMAGE>` only with a reviewed fork image.
+The canonical image is `ghcr.io/wyf9/lag-server`. Convenience scripts default to `latest`; override `LAG_IMAGE` with a reviewed release tag or immutable digest for production.

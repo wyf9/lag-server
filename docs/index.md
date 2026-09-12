@@ -26,5 +26,5 @@ features:
 ---
 
 ::: warning Independent fork
-This site documents this repository, not an upstream Lag service. Unknown fork repository, image, maintainer, and security-contact values remain explicit placeholders in repository policy documents.
+This site documents the independent fork at [wyf9/lag-server](https://github.com/wyf9/lag-server), not an upstream Lag service. Copyright in the original project remains with Lag; this fork is modified and distributed under the MIT License.
 :::

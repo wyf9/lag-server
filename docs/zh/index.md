@@ -26,5 +26,5 @@ features:
 ---
 
 ::: warning 独立分支
-本站记录的是本仓库，而非 Lag 上游服务。仓库、镜像、维护者与安全联系方式等未知值在仓库政策文档中保留为明确占位符。
+本站记录的是独立分支 [wyf9/lag-server](https://github.com/wyf9/lag-server)，而非 Lag 上游服务。原项目版权归 Lag 所有；本分支依据 MIT License 进行修改与分发。
 :::

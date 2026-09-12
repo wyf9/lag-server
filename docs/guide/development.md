@@ -6,9 +6,11 @@
 - Docker, Podman, or nerdctl for the integrated runtime
 - A PostgreSQL instance when running the API outside the container
 
-Clone from `<FORK_REPOSITORY_URL>` after the canonical fork URL is published. The safest integrated setup is:
+Clone the canonical fork repository. The safest integrated setup is:
 
 ```bash
+git clone https://github.com/wyf9/lag-server.git
+cd lag-server
 docker compose up -d --build
 curl http://localhost:3000/api/health
 ```
@@ -40,7 +42,7 @@ The standalone API requires `DATABASE_URL` plus the authentication and origin va
 - Keep behavior claims tied to code and deployment files.
 - Update equivalent pages under `docs/` and `docs/zh/` together.
 - Do not edit generated VitePress, SvelteKit, or dependency output.
-- Keep unknown fork ownership values as placeholders.
+- Keep repository, image, documentation, and security-contact references aligned with this fork's canonical values.
 - Never use real secrets in tests or examples.
 
 For runtime/network changes, exercise page loading, REST health, session creation, WebSocket updates, persistence across restart, and voice from another network. For docs-only changes, `bun run docs:build` is the minimum validation.

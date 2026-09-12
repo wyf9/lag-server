@@ -6,13 +6,11 @@ Do **not** open a public issue or discussion. Send the report privately to:
 
 请**不要**创建公开 issue 或 discussion。请将报告私下发送至：
 
-> `<SECURITY_CONTACT>` — maintainer action required before public launch; no valid fork-specific security address is currently published.
->
-> `<SECURITY_CONTACT>` —— 正式公开前须由维护者填写；目前尚未公布本分支的有效安全联系方式。
+> `security@wyf9.top`
 
-Include the affected version or commit, deployment assumptions, reproduction steps or proof of concept, impact, and any suggested mitigation. Do not include production credentials or personal data. The project cannot promise an acknowledgement or remediation deadline until `<MAINTAINER_NAME>` publishes one.
+Include the affected version or commit, deployment assumptions, reproduction steps or proof of concept, impact, and any suggested mitigation. Do not include production credentials or personal data. No acknowledgement or remediation deadline is guaranteed.
 
-请包含受影响版本或提交、部署前提、复现步骤或概念验证、影响及建议缓解措施。不要包含生产凭据或个人数据。在 `<MAINTAINER_NAME>` 公布响应政策前，本项目不承诺确认或修复时限。
+请包含受影响版本或提交、部署前提、复现步骤或概念验证、影响及建议缓解措施。不要包含生产凭据或个人数据。本项目不保证确认或修复时限。
 
 ## Supported versions / 支持版本
 
@@ -22,14 +20,14 @@ No formal support window has been declared. Treat the default branch as developm
 
 ## Operator baseline / 运维安全基线
 
-- Set strong, independent provider credentials, `LAG_VOICE_KEY`, and `LAG_VOICE_SECRET`; never use documented development defaults in production. `SESSION_SECRET` is inherited deployment configuration and is not consumed by current opaque database sessions.
+- Set strong, independent provider credentials, `LAG_VOICE_KEY`, and `LAG_VOICE_SECRET`; never use documented development defaults in production.
 - Terminate HTTPS/WSS at a maintained reverse proxy and restrict trusted forwarding headers there.
 - Expose only required ports. Never publish bundled PostgreSQL (`5432`) or the internal API (`3001`) directly.
 - Keep `GUEST_ENABLED=false` unless nickname-only guests are intended. Configure one supported identity provider and audit administrator claim mapping; the first external identity receives the bootstrap `platform_admin` grant.
 - Back up and restore-test `lag_data`; patch the host, runtime, base image, Node.js dependencies, PostgreSQL, and LiveKit.
 - Treat room messages, nicknames, IP addresses, session tokens, voice tokens, and logs as sensitive data.
 
-- 为身份提供商凭据、`LAG_VOICE_KEY`、`LAG_VOICE_SECRET` 设置独立强随机值；生产环境禁止使用开发默认值。`SESSION_SECRET` 是继承的部署配置，当前不透明数据库会话不会使用它。
+- 为身份提供商凭据、`LAG_VOICE_KEY`、`LAG_VOICE_SECRET` 设置独立强随机值；生产环境禁止使用开发默认值。
 - 在持续维护的反向代理终止 HTTPS/WSS，并仅在那里接受可信转发头。
 - 只暴露必需端口，绝不直接公开内置 PostgreSQL (`5432`) 或内部 API (`3001`)。
 - 除非明确需要仅昵称访客，否则保持 `GUEST_ENABLED=false`。配置一种受支持的身份提供商并审核管理员 claim 映射；首个外部身份会获得启动用 `platform_admin` 授权。

@@ -19,7 +19,7 @@ s6-overlay 监管 PostgreSQL、LiveKit、API 和 Web 进程。PostgreSQL 初始�
 
 ## 数据与状态
 
-PostgreSQL 存储用户、外部身份、不透明会话、OAuth 事务、角色 grant、房间策略/成员、邀请/封禁、审计事件和消息。`lag_data` 卷保存数据库文件；继承的镜像启动逻辑也可能创建 `.session_secret`，但当前不透明会话不会使用它。WebSocket 连接和订阅位于进程内存，重启后消失，也不会在多个 API 副本之间共享。
+PostgreSQL 存储用户、外部身份、不透明会话、OAuth 事务、角色 grant、房间策略/成员、邀请/封禁、审计事件和消息。`lag_data` 卷保存数据库文件。WebSocket 连接和订阅位于进程内存，重启后消失，也不会在多个 API 副本之间共享。
 
 LiveKit 承载实时语音和媒体。API 使用 `LAG_VOICE_KEY` 与 `LAG_VOICE_SECRET` 签发短期参与者授权，内置 LiveKit 进程使用相同值启动。
 
