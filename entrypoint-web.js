@@ -9,15 +9,21 @@ process.env.PORT = WEB_PORT;
 await import('./web/build/index.js');
 
 function proxy(req, res, targetPort) {
+  const headers = { ...req.headers };
+  delete headers.forwarded;
+  delete headers['x-forwarded-host'];
+  delete headers['x-forwarded-proto'];
+
   const proxyReq = http.request(
     {
       hostname: '127.0.0.1',
       port: targetPort,
       path: req.url,
       method: req.method,
-      headers: { ...req.headers, host: `127.0.0.1:${targetPort}` },
+      headers,
     },
     (proxyRes) => {
+      proxyRes.headers['x-robots-tag'] = 'noindex, nofollow, noarchive';
       res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
       proxyRes.pipe(res, { end: true });
     }
@@ -39,12 +45,16 @@ const server = http.createServer((req, res) => {
 
 server.on('upgrade', (req, socket, head) => {
   const targetPort = req.url?.startsWith('/api/') ? API_PORT : WEB_PORT;
+  const headers = { ...req.headers };
+  delete headers.forwarded;
+  delete headers['x-forwarded-host'];
+  delete headers['x-forwarded-proto'];
   const proxyReq = http.request({
     hostname: '127.0.0.1',
     port: targetPort,
     path: req.url,
     method: req.method,
-    headers: { ...req.headers, host: `127.0.0.1:${targetPort}` },
+    headers,
   });
   proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
     socket.write(

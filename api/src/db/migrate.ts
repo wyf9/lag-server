@@ -2,49 +2,31 @@ import { getSql } from './client.js';
 
 export async function autoMigrate(): Promise<void> {
   const sql = getSql();
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      nickname VARCHAR(64) NOT NULL,
-      avatar_color VARCHAR(7) NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS voice_rooms (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name VARCHAR(64) NOT NULL,
-      created_by UUID REFERENCES users(id) ON DELETE SET NULL,
-      max_participants INTEGER NOT NULL DEFAULT 50,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS voice_room_participants (
-      room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE,
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      PRIMARY KEY (room_id, user_id)
-    )
-  `;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS room_messages (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE,
-      user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-      content TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-
-  await sql`CREATE INDEX IF NOT EXISTS idx_room_messages_room_id ON room_messages(room_id, created_at DESC)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_voice_room_participants_room_id ON voice_room_participants(room_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_voice_room_participants_user_id ON voice_room_participants(user_id)`;
-
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS users (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), nickname VARCHAR(64) NOT NULL, email VARCHAR(320), avatar_url TEXT, avatar_color VARCHAR(7) NOT NULL, disabled BOOLEAN NOT NULL DEFAULT FALSE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS oauth_identities (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, provider VARCHAR(32) NOT NULL, issuer VARCHAR(2048) NOT NULL, subject VARCHAR(512) NOT NULL, claims JSONB NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(provider, issuer, subject));
+    CREATE TABLE IF NOT EXISTS sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, token_hash VARCHAR(64) NOT NULL UNIQUE, csrf_hash VARCHAR(64) NOT NULL, id_token TEXT, provider_session_id VARCHAR(512), user_agent TEXT, client_ip VARCHAR(255), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), idle_expires_at TIMESTAMPTZ NOT NULL, absolute_expires_at TIMESTAMPTZ NOT NULL, revoked_at TIMESTAMPTZ);
+    CREATE TABLE IF NOT EXISTS oauth_transactions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), state_hash VARCHAR(64) NOT NULL UNIQUE, nonce VARCHAR(128), code_verifier VARCHAR(128), redirect_uri TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), expires_at TIMESTAMPTZ NOT NULL, consumed_at TIMESTAMPTZ);
+    CREATE TABLE IF NOT EXISTS role_grants (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, role VARCHAR(64) NOT NULL, scope_type VARCHAR(32) NOT NULL DEFAULT 'platform', scope_id VARCHAR(512), source VARCHAR(32) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE UNIQUE INDEX IF NOT EXISTS role_grant_unique ON role_grants(user_id, role, scope_type, COALESCE(scope_id, ''), source);
+    CREATE TABLE IF NOT EXISTS platform_settings (key VARCHAR(128) PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS voice_rooms (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(64) NOT NULL, created_by UUID REFERENCES users(id) ON DELETE SET NULL, max_participants INTEGER NOT NULL DEFAULT 50, visibility VARCHAR(16) NOT NULL DEFAULT 'public', allow_guests BOOLEAN NOT NULL DEFAULT TRUE, default_role VARCHAR(16) NOT NULL DEFAULT 'listener', history_visibility VARCHAR(24) NOT NULL DEFAULT 'all', retention VARCHAR(16) NOT NULL DEFAULT '30', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS voice_room_participants (room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(room_id, user_id));
+    CREATE TABLE IF NOT EXISTS room_messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, user_id UUID REFERENCES users(id) ON DELETE SET NULL, content TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS room_acl_entries (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, subject_type VARCHAR(32) NOT NULL, subject_id VARCHAR(512) NOT NULL, permission VARCHAR(32) NOT NULL, granted_by UUID REFERENCES users(id) ON DELETE SET NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(room_id, subject_type, subject_id, permission));
+    CREATE TABLE IF NOT EXISTS room_invites (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, token_hash VARCHAR(64) UNIQUE, invited_user_id UUID REFERENCES users(id) ON DELETE CASCADE, permission VARCHAR(32) NOT NULL, expires_at TIMESTAMPTZ NOT NULL, max_uses INTEGER, use_count INTEGER NOT NULL DEFAULT 0, created_by UUID REFERENCES users(id) ON DELETE SET NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS audit_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL, action VARCHAR(128) NOT NULL, target_type VARCHAR(64), target_id VARCHAR(512), metadata JSONB NOT NULL DEFAULT '{}', client_ip VARCHAR(255), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE TABLE IF NOT EXISTS logout_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), provider VARCHAR(32) NOT NULL, issuer VARCHAR(2048) NOT NULL, event_key VARCHAR(512) NOT NULL, subject VARCHAR(512), provider_session_id VARCHAR(512), received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(provider, issuer, event_key));
+    CREATE TABLE IF NOT EXISTS room_members (room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, role VARCHAR(16) NOT NULL, joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), invited_by UUID REFERENCES users(id) ON DELETE SET NULL, PRIMARY KEY(room_id, user_id));
+    CREATE TABLE IF NOT EXISTS room_bans (room_id UUID NOT NULL REFERENCES voice_rooms(id) ON DELETE CASCADE, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, banned_by UUID REFERENCES users(id) ON DELETE SET NULL, banned_role VARCHAR(16), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(room_id, user_id));
+    ALTER TABLE room_bans ADD COLUMN IF NOT EXISTS banned_role VARCHAR(16);
+    CREATE TABLE IF NOT EXISTS room_ownership_transfers (room_id UUID PRIMARY KEY REFERENCES voice_rooms(id) ON DELETE CASCADE, from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, to_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+    CREATE INDEX IF NOT EXISTS idx_room_members_user_id ON room_members(user_id);
+    CREATE INDEX IF NOT EXISTS idx_room_invites_invited_user_id ON room_invites(invited_user_id);
+    CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(idle_expires_at, absolute_expires_at); CREATE INDEX IF NOT EXISTS idx_room_messages_room_id ON room_messages(room_id, created_at DESC); CREATE INDEX IF NOT EXISTS idx_voice_room_participants_user_id ON voice_room_participants(user_id);
+    CREATE INDEX IF NOT EXISTS idx_role_grants_platform_admin ON role_grants(user_id) WHERE role = 'platform_admin' AND scope_type = 'platform';
+    CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events(created_at DESC, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
+  `);
   console.log('[migrate] Database schema ready');
 }

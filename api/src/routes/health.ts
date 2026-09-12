@@ -1,21 +1,21 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { getConfig } from '../config.js';
 
 const healthRoutes: FastifyPluginAsync = async (fastify) => {
+  const config = getConfig();
   fastify.get('/api/health', async () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
   fastify.get('/api/discover', async () => {
-    const host = process.env.EXTERNAL_HOST ?? 'localhost';
-    const webPort = process.env.WEB_PORT ?? '3000';
-    const apiPort = process.env.API_PORT ?? '3001';
-    const voicePort = process.env.VOICE_PORT ?? '7880';
-
     return {
-      apiUrl: `http://${host}:${apiPort}`,
-      wsUrl: `ws://${host}:${apiPort}/api/ws`,
-      voiceUrl: `ws://${host}:${voicePort}`,
+      apiUrl: `http://${config.externalHost}:${config.port}`,
+      wsUrl: `ws://${config.externalHost}:${config.port}/api/ws`,
+      voiceUrl: `ws://${config.externalHost}:${config.voicePort}`,
       version: '1.0.0',
+      guestEnabled: config.guestEnabled,
+      authProvider: config.auth.provider,
+      providerName: config.auth.label,
     };
   });
 };

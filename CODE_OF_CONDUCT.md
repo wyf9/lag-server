@@ -18,7 +18,7 @@ We are committed to providing a welcoming and inclusive environment for everyone
 
 ## Enforcement
 
-Instances of unacceptable behavior may be reported to conduct@trylag.com. All complaints will be reviewed and investigated.
+Instances of unacceptable behavior may be reported privately to `<CONDUCT_CONTACT>`. This placeholder must be replaced before the fork opens public community channels.
 
 Project maintainers may remove, edit, or reject comments, commits, code, issues, and other contributions that do not align with this Code of Conduct.
 

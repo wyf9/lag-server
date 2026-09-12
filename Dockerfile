@@ -1,19 +1,19 @@
 # Stage 1: Build web app
-FROM node:20-slim AS web-builder
+FROM oven/bun:1.3.14-slim AS web-builder
 WORKDIR /build/web
-COPY web/package.json web/package-lock.json* ./
-RUN npm install --legacy-peer-deps
+COPY web/package.json web/bun.lock ./
+RUN bun install --frozen-lockfile
 COPY web/ ./
 ENV VITE_API_URL=""
-RUN npm run build
+RUN bun run build
 
 # Stage 2: Build API
-FROM node:20-slim AS api-builder
+FROM oven/bun:1.3.14-slim AS api-builder
 WORKDIR /build/api
-COPY api/package.json api/package-lock.json* ./
-RUN npm install
+COPY api/package.json api/bun.lock ./
+RUN bun install --frozen-lockfile
 COPY api/ ./
-RUN npx tsc
+RUN bun run build
 
 # Stage 3: Runtime
 FROM ubuntu:22.04
@@ -165,20 +165,9 @@ COPY s6/livekit /etc/s6-overlay/s6-rc.d/livekit
 RUN echo "longrun" > /etc/s6-overlay/s6-rc.d/livekit/type \
     && touch /etc/s6-overlay/s6-rc.d/user/contents.d/livekit
 
-# API startup script - persists SESSION_SECRET to data volume
+# API startup script
 COPY <<'APISTART' /usr/local/bin/start-api.sh
 #!/bin/bash
-SECRET_FILE="/var/lib/postgresql/data/.session_secret"
-if [ -z "$SESSION_SECRET" ]; then
-  if [ -f "$SECRET_FILE" ]; then
-    export SESSION_SECRET=$(cat "$SECRET_FILE")
-    echo "[api] Loaded SESSION_SECRET from $SECRET_FILE"
-  else
-    export SESSION_SECRET=$(head -c 32 /dev/urandom | base64)
-    echo "$SESSION_SECRET" > "$SECRET_FILE"
-    echo "[api] Generated and saved SESSION_SECRET to $SECRET_FILE"
-  fi
-fi
 exec /usr/bin/node /app/api/dist/server.js
 APISTART
 RUN chmod +x /usr/local/bin/start-api.sh
@@ -202,6 +191,10 @@ ENV API_PORT=3001
 ENV PORT=3000
 ENV DATABASE_URL=postgres://postgres@127.0.0.1:5432/lag
 ENV VOICE_URL=ws://localhost:7880
+ENV GUEST_ENABLED=false
+ENV SESSION_IDLE_SECONDS=604800
+ENV SESSION_ABSOLUTE_SECONDS=2592000
+ENV OAUTH_TRANSACTION_SECONDS=600
 
 EXPOSE 3000 7880 7881
 EXPOSE 50000-50200/udp

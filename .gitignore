@@ -1,6 +1,5 @@
 # AI agent rules and config
 CLAUDE.md
-AGENTS.md
 GEMINI.md
 COPILOT.md
 .claude/
@@ -55,13 +54,12 @@ docker-compose.override.yml
 # SvelteKit
 .svelte-kit/
 
-# Node / JS
+# JavaScript tooling
 node_modules/
 dist/
 build/
 .next/
 *.tsbuildinfo
-npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*

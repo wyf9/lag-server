@@ -1,21 +1,57 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${LAG_IMAGE:-ghcr.io/lag-app/self-host:latest}"
+IMAGE="${LAG_IMAGE:-}"
 NAME="${LAG_NAME:-lag}"
 ACTION="${1:-up}"
 
 run_container() {
+  if [ -z "$IMAGE" ]; then
+    echo "LAG_IMAGE is required; use '$0 build' to build this checkout" >&2
+    exit 1
+  fi
+
+  local optional_env=()
+  [ -n "${PROXY_HEADER:-}" ] && optional_env+=(-e "PROXY_HEADER=$PROXY_HEADER")
+  [ -n "${AUTH_ADMIN_CLAIM_PATH:-}" ] && optional_env+=(-e "AUTH_ADMIN_CLAIM_PATH=$AUTH_ADMIN_CLAIM_PATH")
+  [ -n "${AUTH_ADMIN_CLAIM_VALUE:-}" ] && optional_env+=(-e "AUTH_ADMIN_CLAIM_VALUE=$AUTH_ADMIN_CLAIM_VALUE")
+  [ -n "${OIDC_ISSUER:-}" ] && optional_env+=(-e "OIDC_ISSUER=$OIDC_ISSUER")
+  [ -n "${PRISM_ISSUER:-}" ] && optional_env+=(-e "PRISM_ISSUER=$PRISM_ISSUER")
+
   nerdctl run -d --name "$NAME" \
-    -p 3000:3000 \
-    -p 7880:7880 \
-    -p 7881:7881 \
-    -p 50000-50200:50000-50200/udp \
+    -p "${LAG_BIND_ADDRESS:-127.0.0.1}:3000:3000" \
+    -p "${LAG_BIND_ADDRESS:-127.0.0.1}:7880:7880" \
+    -p "${LAG_BIND_ADDRESS:-127.0.0.1}:7881:7881" \
+    -p "${LAG_BIND_ADDRESS:-127.0.0.1}:50000-50200:50000-50200/udp" \
     -v lag_data:/var/lib/postgresql/data \
-    -e SESSION_SECRET="${SESSION_SECRET:-}" \
-    -e EXTERNAL_IP="${EXTERNAL_IP:-}" \
+    -e ALLOWED_HOSTS="${ALLOWED_HOSTS:-http://localhost:3000}" \
+    -e AUTH_PROVIDER="${AUTH_PROVIDER:-oauth2}" \
+    -e AUTH_PROVIDER_LABEL="${AUTH_PROVIDER_LABEL:-Development OAuth}" \
+    -e AUTH_CLIENT_ID="${AUTH_CLIENT_ID:-insecure-development-client}" \
+    -e AUTH_CLIENT_SECRET="${AUTH_CLIENT_SECRET:-insecure-development-secret}" \
+    -e AUTH_SCOPES="${AUTH_SCOPES:-profile email}" \
+    -e AUTH_PKCE="${AUTH_PKCE:-required}" \
+    -e OAUTH_AUTHORIZATION_ENDPOINT="${OAUTH_AUTHORIZATION_ENDPOINT:-https://provider.example.invalid/oauth/authorize}" \
+    -e OAUTH_TOKEN_ENDPOINT="${OAUTH_TOKEN_ENDPOINT:-https://provider.example.invalid/oauth/token}" \
+    -e OAUTH_USERINFO_ENDPOINT="${OAUTH_USERINFO_ENDPOINT:-https://provider.example.invalid/api/user}" \
+    -e OAUTH_SUBJECT_PATH="${OAUTH_SUBJECT_PATH:-id}" \
+    -e OAUTH_NAME_PATH="${OAUTH_NAME_PATH:-name}" \
+    -e OAUTH_EMAIL_PATH="${OAUTH_EMAIL_PATH:-email}" \
+    -e OAUTH_AVATAR_PATH="${OAUTH_AVATAR_PATH:-avatar_url}" \
+    -e PRISM_TEAM_CLAIM_PATH="${PRISM_TEAM_CLAIM_PATH:-teams}" \
+    -e PRISM_TEAM_ID_PATH="${PRISM_TEAM_ID_PATH:-id}" \
+    -e PRISM_TEAM_ROLE_PATH="${PRISM_TEAM_ROLE_PATH:-role}" \
+    -e PRISM_OWNER_ROLES="${PRISM_OWNER_ROLES:-owner,co-owner}" \
+    -e PRISM_TEAM_ID="${PRISM_TEAM_ID:-}" \
+    -e GUEST_ENABLED="${GUEST_ENABLED:-true}" \
+    -e SESSION_IDLE_SECONDS="${SESSION_IDLE_SECONDS:-604800}" \
+    -e SESSION_ABSOLUTE_SECONDS="${SESSION_ABSOLUTE_SECONDS:-2592000}" \
+    -e OAUTH_TRANSACTION_SECONDS="${OAUTH_TRANSACTION_SECONDS:-600}" \
+    -e EXTERNAL_IP="${EXTERNAL_IP:-127.0.0.1}" \
     -e LAG_VOICE_KEY="${LAG_VOICE_KEY:-devkey}" \
     -e LAG_VOICE_SECRET="${LAG_VOICE_SECRET:-secret}" \
+    -e VOICE_URL="${VOICE_URL:-ws://localhost:7880}" \
+    "${optional_env[@]}" \
     "$IMAGE"
 }
 

@@ -1,9 +1,2 @@
 User-agent: *
-Allow: /
-Disallow: /app/
-Disallow: /auth/
-Disallow: /invite/
-Disallow: /account/
-Disallow: /beta/
-
-Sitemap: https://trylag.com/sitemap.xml
+Disallow: /

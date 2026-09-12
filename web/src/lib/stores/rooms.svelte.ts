@@ -7,6 +7,24 @@ export interface Room {
 	maxParticipants: number;
 	createdAt: string;
 	participantCount: number;
+	visibility: 'public' | 'unlisted' | 'private';
+	allowGuests: boolean;
+	defaultRole: 'speaker' | 'listener';
+	historyVisibility: 'all' | 'since_membership' | 'none';
+	retention: '1' | '7' | '30' | 'forever';
+	role: RoomRole | null;
+}
+
+export type RoomRole = 'owner' | 'moderator' | 'speaker' | 'listener';
+
+export interface RoomOptions {
+	name: string;
+	maxParticipants: number;
+	visibility: Room['visibility'];
+	allowGuests: boolean;
+	defaultRole: Room['defaultRole'];
+	historyVisibility: Room['historyVisibility'];
+	retention: Room['retention'];
 }
 
 export interface RoomParticipant {
@@ -14,7 +32,13 @@ export interface RoomParticipant {
 	nickname: string;
 	avatarColor: string;
 	joinedAt: string;
+	role: RoomRole | null;
 }
+
+export interface RoomMember extends RoomParticipant { role: RoomRole; }
+
+export interface RoomUserSearchResult { id: string; nickname: string; avatar: string; }
+export interface RoomInvitation { id: string; roomId: string; permission: Exclude<RoomRole, 'owner'>; expiresAt: string; token?: string; }
 
 let _rooms = $state<Room[]>([]);
 let _loading = $state(false);
@@ -37,12 +61,66 @@ export async function fetchRooms(): Promise<void> {
 	}
 }
 
-export async function createRoom(name: string, maxParticipants?: number): Promise<Room> {
+export async function createRoom(options: RoomOptions): Promise<Room> {
 	const data = await api<{ room: Room }>('/api/rooms', {
 		method: 'POST',
-		body: { name, maxParticipants },
+		body: options,
 	});
 	return data.room;
+}
+
+export async function updateRoomSettings(roomId: string, options: Partial<RoomOptions>): Promise<Room> {
+	const data = await api<{ room: Room }>(`/api/rooms/${roomId}/settings`, { method: 'PATCH', body: options });
+	_rooms = _rooms.map((room) => room.id === roomId ? { ...room, ...data.room } : room);
+	return data.room;
+}
+
+export async function fetchRoomMembers(roomId: string): Promise<RoomMember[]> {
+	return (await api<{ members: RoomMember[] }>(`/api/rooms/${roomId}/members`)).members;
+}
+
+export async function updateMemberRole(roomId: string, userId: string, role: Exclude<RoomRole, 'owner'>): Promise<void> {
+	await api(`/api/rooms/${roomId}/members/${userId}`, { method: 'PATCH', body: { role } });
+}
+
+export async function removeMember(roomId: string, userId: string, action: 'kick' | 'ban'): Promise<void> {
+	await api(`/api/rooms/${roomId}/members/${userId}/remove`, { method: 'POST', body: { action } });
+}
+
+export async function searchRoomUsers(roomId: string, query: string): Promise<RoomUserSearchResult[]> {
+	return (await api<{ users: RoomUserSearchResult[] }>(`/api/rooms/${roomId}/users/search?q=${encodeURIComponent(query)}`)).users;
+}
+
+export async function inviteRoomUser(roomId: string, userId: string, role: Exclude<RoomRole, 'owner'>, expiresInHours: number): Promise<RoomInvitation> {
+	return (await api<{ invitation: RoomInvitation }>(`/api/rooms/${roomId}/invitations/users`, { method: 'POST', body: { userId, role, expiresInHours } })).invitation;
+}
+
+export async function createRoomInviteLink(roomId: string, role: Exclude<RoomRole, 'owner'>, expiresInHours: number, maxUses: number): Promise<RoomInvitation> {
+	return (await api<{ invitation: RoomInvitation }>(`/api/rooms/${roomId}/invitations/links`, { method: 'POST', body: { role, expiresInHours, maxUses } })).invitation;
+}
+
+export async function transferRoomOwnership(roomId: string, userId: string): Promise<void> {
+	await api(`/api/rooms/${roomId}/ownership-transfer`, { method: 'POST', body: { userId } });
+}
+
+export async function confirmRoomOwnership(roomId: string): Promise<void> {
+	await api(`/api/rooms/${roomId}/ownership-transfer/confirm`, { method: 'POST' });
+}
+
+export async function unbanRoomUser(roomId: string, userId: string): Promise<void> {
+	await api(`/api/rooms/${roomId}/bans/${userId}`, { method: 'DELETE' });
+}
+
+export async function acceptRoomInvitation(invitation: string): Promise<{ roomId: string }> {
+	return api(`/api/room-invitations/${invitation}/accept`, { method: 'POST' });
+}
+
+export async function leaveRoom(roomId: string): Promise<void> {
+	await api(`/api/rooms/${roomId}/leave`, { method: 'DELETE' });
+}
+
+export async function leaveRoomMembership(roomId: string): Promise<void> {
+	await api(`/api/rooms/${roomId}/membership`, { method: 'DELETE' });
 }
 
 export async function deleteRoom(roomId: string): Promise<void> {

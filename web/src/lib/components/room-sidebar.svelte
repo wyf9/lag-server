@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { getRooms } from '$lib/stores/rooms.svelte';
-	import { getSessionState, clearSession } from '$lib/stores/session.svelte';
+	import { getSessionState, isPlatformAdmin, logout } from '$lib/stores/session.svelte';
+	import { disconnectWs } from '$lib/stores/websocket.svelte';
 	import { getVoiceState, connectToRoom, disconnectFromRoom } from '$lib/stores/voice.svelte';
 	import CreateRoomModal from './create-room-modal.svelte';
 	import { cn } from '$lib/utils';
@@ -25,23 +26,25 @@
 		}
 	}
 
-	function handleLogout() {
+	async function handleLogout() {
 		if (voice.status !== 'disconnected') {
 			disconnectFromRoom();
 		}
-		clearSession();
-		goto('/');
+		disconnectWs();
+		let redirecting = false;
+		try { redirecting = await logout(); } catch {}
+		if (!redirecting && getSessionState().user === null) goto('/');
 	}
 </script>
 
-<aside class="flex h-full w-64 flex-col border-r border-border bg-card">
+<aside class="flex h-full w-20 shrink-0 flex-col border-r border-border bg-card sm:w-64">
 	<div class="flex items-center justify-between border-b border-border p-4">
-		<img src="/lag_logo_trimmed_dark_mode.png" alt="Lag" class="h-7" />
+		<img src="/lag_logo_trimmed_dark_mode.png" alt="Lag" class="hidden h-7 sm:block" />
 		<button
 			onclick={() => showCreateModal = true}
 			class="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:brightness-110"
 		>
-			New Room
+			<span class="sm:hidden">+</span><span class="hidden sm:inline">New Room</span>
 		</button>
 	</div>
 
@@ -60,7 +63,7 @@
 						: 'text-text-secondary hover:bg-surface hover:text-foreground'
 				)}
 			>
-				<span class="truncate text-sm font-medium">{room.name}</span>
+				<span class="truncate text-sm font-medium"><span class="sm:hidden">{room.name.charAt(0).toUpperCase()}</span><span class="hidden sm:inline">{room.name}</span></span>
 				{#if room.participantCount > 0}
 					<span class="ml-2 flex items-center gap-1 text-xs text-lag-success">
 						<span class="h-1.5 w-1.5 rounded-full bg-lag-success"></span>
@@ -72,15 +75,16 @@
 	</div>
 
 	<div class="border-t border-border p-3">
+		{#if isPlatformAdmin(session.user)}<a href="/admin" class="mb-2 hidden rounded-md px-2 py-1 text-xs text-primary hover:bg-surface sm:block">Administration</a>{/if}
 		<div class="flex items-center justify-between">
-			<div class="flex items-center gap-2">
+			<div class="flex items-center gap-2 min-w-0">
 				<div
 					class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
 					style:background-color={session.user?.avatarColor ?? '#43b8b0'}
 				>
 					{session.user?.nickname?.charAt(0).toUpperCase() ?? '?'}
 				</div>
-				<span class="text-sm font-medium text-foreground truncate max-w-[120px]">
+				<span class="hidden text-sm font-medium text-foreground truncate max-w-[120px] sm:block">
 					{session.user?.nickname}
 				</span>
 			</div>
@@ -88,7 +92,7 @@
 				onclick={handleLogout}
 				class="rounded-md px-2 py-1 text-xs text-text-muted hover:bg-surface hover:text-foreground"
 			>
-				Leave
+				<span class="sm:hidden">Exit</span><span class="hidden sm:inline">Logout</span>
 			</button>
 		</div>
 	</div>

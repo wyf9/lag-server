@@ -1,10 +1,12 @@
-import { AccessToken, type VideoGrant } from 'livekit-server-sdk';
+import { AccessToken, RoomServiceClient, type VideoGrant } from 'livekit-server-sdk';
 import { TrackSource } from '@livekit/protocol';
+import { getConfig } from '../config.js';
 
 export interface CreateVoiceTokenInput {
   roomId: string;
   userId: string;
   displayName?: string;
+  canPublish: boolean;
 }
 
 export interface CreateVoiceTokenResult {
@@ -14,9 +16,7 @@ export interface CreateVoiceTokenResult {
 }
 
 export async function createVoiceToken(input: CreateVoiceTokenInput): Promise<CreateVoiceTokenResult> {
-  const apiKey = (process.env.LAG_VOICE_KEY ?? 'devkey').trim();
-  const apiSecret = (process.env.LAG_VOICE_SECRET ?? 'secret').trim();
-  const voiceUrl = (process.env.VOICE_URL ?? 'ws://localhost:7880').trim().replace(/\/+$/, '');
+  const { voiceKey: apiKey, voiceSecret: apiSecret, voiceUrl } = getConfig();
 
   const participantIdentity = input.userId;
   const token = new AccessToken(apiKey, apiSecret, {
@@ -28,10 +28,12 @@ export async function createVoiceToken(input: CreateVoiceTokenInput): Promise<Cr
   const videoGrant: VideoGrant = {
     room: input.roomId,
     roomJoin: true,
-    canPublish: true,
+    canPublish: input.canPublish,
     canSubscribe: true,
     canPublishData: true,
-    canPublishSources: [TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO],
+    canPublishSources: input.canPublish
+      ? [TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO]
+      : [],
   };
   token.addGrant(videoGrant);
 
@@ -42,4 +44,29 @@ export async function createVoiceToken(input: CreateVoiceTokenInput): Promise<Cr
     participantToken,
     participantIdentity,
   };
+}
+
+function roomService(): RoomServiceClient {
+  const config = getConfig();
+  return new RoomServiceClient(config.voiceUrl.replace(/^ws/, 'http'), config.voiceKey, config.voiceSecret);
+}
+
+export async function updateVoicePermissions(roomId: string, userId: string, publish: boolean): Promise<void> {
+  try {
+    await roomService().updateParticipant(roomId, userId, undefined, {
+      canPublish: publish,
+      canSubscribe: true,
+      canPublishData: true,
+      canPublishSources: publish
+        ? [TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO]
+        : [],
+    });
+  } catch (error) {
+    if (!String(error).toLowerCase().includes('not found')) throw error;
+  }
+}
+
+export async function removeVoiceParticipant(roomId: string, userId: string): Promise<void> {
+  try { await roomService().removeParticipant(roomId, userId); }
+  catch (error) { if (!String(error).toLowerCase().includes('not found')) throw error; }
 }

@@ -14,7 +14,7 @@
 	let initialized = false;
 
 	$effect(() => {
-		if (session.loaded && !session.token) {
+		if (session.loaded && !session.user) {
 			goto('/');
 		}
 	});
@@ -31,7 +31,7 @@
 	});
 
 	$effect(() => {
-		if (session.token && !initialized) {
+		if (session.user && !initialized) {
 			initialized = true;
 			fetchRooms();
 			connectWs();

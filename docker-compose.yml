@@ -2,15 +2,43 @@ services:
   lag:
     build: .
     ports:
-      - "3000:3000"
-      - "7880:7880"
-      - "7881:7881"
-      - "50000-50200:50000-50200/udp"
+      - "${LAG_BIND_ADDRESS:-127.0.0.1}:3000:3000"
+      - "${LAG_BIND_ADDRESS:-127.0.0.1}:7880:7880"
+      - "${LAG_BIND_ADDRESS:-127.0.0.1}:7881:7881"
+      - "${LAG_BIND_ADDRESS:-127.0.0.1}:50000-50200:50000-50200/udp"
     environment:
-      SESSION_SECRET: ${SESSION_SECRET:-}
-      EXTERNAL_IP: ${EXTERNAL_IP:-127.0.0.1}
-      LAG_VOICE_KEY: ${LAG_VOICE_KEY:-devkey}
-      LAG_VOICE_SECRET: ${LAG_VOICE_SECRET:-secret}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-http://localhost:3000}
+      - AUTH_PROVIDER=${AUTH_PROVIDER:-oauth2}
+      - AUTH_PROVIDER_LABEL=${AUTH_PROVIDER_LABEL:-Development OAuth}
+      - AUTH_CLIENT_ID=${AUTH_CLIENT_ID:-insecure-development-client}
+      - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET:-insecure-development-secret}
+      - AUTH_SCOPES=${AUTH_SCOPES:-profile email}
+      - AUTH_PKCE=${AUTH_PKCE:-required}
+      - OAUTH_AUTHORIZATION_ENDPOINT=${OAUTH_AUTHORIZATION_ENDPOINT:-https://provider.example.invalid/oauth/authorize}
+      - OAUTH_TOKEN_ENDPOINT=${OAUTH_TOKEN_ENDPOINT:-https://provider.example.invalid/oauth/token}
+      - OAUTH_USERINFO_ENDPOINT=${OAUTH_USERINFO_ENDPOINT:-https://provider.example.invalid/api/user}
+      - OAUTH_SUBJECT_PATH=${OAUTH_SUBJECT_PATH:-id}
+      - OAUTH_NAME_PATH=${OAUTH_NAME_PATH:-name}
+      - OAUTH_EMAIL_PATH=${OAUTH_EMAIL_PATH:-email}
+      - OAUTH_AVATAR_PATH=${OAUTH_AVATAR_PATH:-avatar_url}
+      - PRISM_TEAM_CLAIM_PATH=${PRISM_TEAM_CLAIM_PATH:-teams}
+      - PRISM_TEAM_ID_PATH=${PRISM_TEAM_ID_PATH:-id}
+      - PRISM_TEAM_ROLE_PATH=${PRISM_TEAM_ROLE_PATH:-role}
+      - PRISM_OWNER_ROLES=${PRISM_OWNER_ROLES:-owner,co-owner}
+      - PRISM_TEAM_ID
+      - GUEST_ENABLED=${GUEST_ENABLED:-true}
+      - SESSION_IDLE_SECONDS=${SESSION_IDLE_SECONDS:-604800}
+      - SESSION_ABSOLUTE_SECONDS=${SESSION_ABSOLUTE_SECONDS:-2592000}
+      - OAUTH_TRANSACTION_SECONDS=${OAUTH_TRANSACTION_SECONDS:-600}
+      - EXTERNAL_IP=${EXTERNAL_IP:-127.0.0.1}
+      - LAG_VOICE_KEY=${LAG_VOICE_KEY:-devkey}
+      - LAG_VOICE_SECRET=${LAG_VOICE_SECRET:-secret}
+      - VOICE_URL=${VOICE_URL:-ws://localhost:7880}
+      - PROXY_HEADER
+      - AUTH_ADMIN_CLAIM_PATH
+      - AUTH_ADMIN_CLAIM_VALUE
+      - OIDC_ISSUER
+      - PRISM_ISSUER
     volumes:
       - lag_data:/var/lib/postgresql/data
 

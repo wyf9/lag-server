@@ -1,11 +1,14 @@
 import { getWsUrl } from '$lib/api';
 import { handleRoomCreated, handleRoomDeleted, updateParticipantCount, type Room } from './rooms.svelte';
 import { addMessage, type ChatMessage } from './chat.svelte';
+import { addRoomAction, dismissRoomActions } from './notifications.svelte';
 
 let ws: WebSocket | null = null;
 let pingInterval: ReturnType<typeof setInterval> | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let _connected = $state(false);
+let reconnectEnabled = false;
+const desiredRooms = new Set<string>();
 
 export function isWsConnected(): boolean {
 	return _connected;
@@ -13,12 +16,14 @@ export function isWsConnected(): boolean {
 
 export function connectWs(): void {
 	if (ws) return;
+	reconnectEnabled = true;
 
 	const url = getWsUrl();
 	ws = new WebSocket(url);
 
 	ws.onopen = () => {
 		_connected = true;
+		for (const roomId of desiredRooms) send({ type: 'subscribe_room', roomId });
 		pingInterval = setInterval(() => {
 			if (ws?.readyState === WebSocket.OPEN) {
 				ws.send(JSON.stringify({ type: 'ping' }));
@@ -35,7 +40,7 @@ export function connectWs(): void {
 
 	ws.onclose = () => {
 		cleanup();
-		reconnectTimer = setTimeout(() => connectWs(), 2000);
+		if (reconnectEnabled) reconnectTimer = setTimeout(() => connectWs(), 2000);
 	};
 
 	ws.onerror = () => {
@@ -44,6 +49,7 @@ export function connectWs(): void {
 }
 
 export function disconnectWs(): void {
+	reconnectEnabled = false;
 	if (reconnectTimer) {
 		clearTimeout(reconnectTimer);
 		reconnectTimer = null;
@@ -56,10 +62,12 @@ export function disconnectWs(): void {
 }
 
 export function subscribeRoom(roomId: string): void {
+	desiredRooms.add(roomId);
 	send({ type: 'subscribe_room', roomId });
 }
 
 export function unsubscribeRoom(roomId: string): void {
+	desiredRooms.delete(roomId);
 	send({ type: 'unsubscribe_room', roomId });
 }
 
@@ -104,6 +112,15 @@ function handleMessage(msg: any): void {
 			break;
 		case 'room_message':
 			addMessage(msg.message as ChatMessage);
+			break;
+		case 'room_invitation':
+			addRoomAction({ type: 'invitation', roomId: msg.roomId, invitationId: msg.invitationId, role: msg.role });
+			break;
+		case 'room_ownership_transfer_requested':
+			addRoomAction({ type: 'ownership-transfer', roomId: msg.roomId });
+			break;
+		case 'room_ownership_transferred':
+			dismissRoomActions(msg.roomId);
 			break;
 	}
 }

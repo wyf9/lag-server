@@ -7,6 +7,11 @@
 
 	let name = $state('');
 	let maxParticipants = $state(50);
+	let visibility = $state<'public' | 'unlisted' | 'private'>('public');
+	let allowGuests = $state(true);
+	let defaultRole = $state<'speaker' | 'listener'>('listener');
+	let historyVisibility = $state<'all' | 'since_membership' | 'none'>('all');
+	let retention = $state<'7' | '30' | 'forever'>('30');
 	let error = $state('');
 	let loading = $state(false);
 
@@ -18,7 +23,7 @@
 		error = '';
 
 		try {
-			const room = await createRoom(name.trim(), maxParticipants);
+			const room = await createRoom({ name: name.trim(), maxParticipants, visibility, allowGuests, defaultRole, historyVisibility, retention });
 			onclose();
 			goto(`/rooms/${room.id}`);
 			try {
@@ -40,8 +45,9 @@
 <div
 	class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
 	onclick={handleBackdropClick}
+	role="presentation"
 >
-	<div class="w-full max-w-md rounded-lg border border-border bg-surface-elevated p-6 shadow-lg">
+	<div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-surface-elevated p-6 shadow-lg">
 		<h2 class="text-lg font-heading text-foreground mb-4">Create Room</h2>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
@@ -74,6 +80,22 @@
 					disabled={loading}
 				/>
 			</div>
+
+			<div class="grid grid-cols-2 gap-3">
+				<label class="text-sm text-text-secondary">Visibility
+					<select bind:value={visibility} onchange={() => { if (visibility === 'private') allowGuests = false; }} class="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground"><option value="public">Public</option><option value="unlisted">Unlisted</option><option value="private">Private</option></select>
+				</label>
+				<label class="text-sm text-text-secondary">Default role
+					<select bind:value={defaultRole} class="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground"><option value="listener">Listener</option><option value="speaker">Speaker</option></select>
+				</label>
+				<label class="text-sm text-text-secondary">Chat history
+					<select bind:value={historyVisibility} class="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground"><option value="all">All history</option><option value="since_membership">Since joining</option><option value="none">Disabled</option></select>
+				</label>
+				<label class="text-sm text-text-secondary">Retention
+					<select bind:value={retention} class="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground"><option value="7">7 days</option><option value="30">30 days</option><option value="forever">Forever</option></select>
+				</label>
+			</div>
+			<label class="flex items-center gap-2 text-sm text-text-secondary"><input type="checkbox" bind:checked={allowGuests} disabled={visibility === 'private'} /> Allow guest accounts</label>
 
 			{#if error}
 				<p class="text-sm text-lag-danger">{error}</p>

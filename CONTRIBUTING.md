@@ -1,48 +1,55 @@
-# Contributing to Lag Self-Hosted
+# Contributing / 贡献指南
 
-Thanks for your interest in contributing! Here's how to get started.
+Contributions to this independent fork are welcome. 本独立分支欢迎贡献。
 
-## Development Setup
+## Before opening a change / 提交更改前
+
+1. Read [CONTEXT.md](CONTEXT.md) and the [development guide](docs/guide/development.md).
+2. Create a focused branch from the repository's default branch.
+3. Do not silently restore upstream domains, images, contacts, branding, or repository links. Use an explicit placeholder when the fork's value is undecided.
+4. Keep secrets out of commits, examples, logs, screenshots, and fixtures.
+
+1. 阅读 [CONTEXT.md](CONTEXT.md) 与[开发指南](docs/zh/guide/development.md)。
+2. 从仓库默认分支创建目标单一的分支。
+3. 不要擅自恢复上游域名、镜像、联系方式、品牌或仓库链接；本分支的值未确定时使用明确占位符。
+4. 不要在提交、示例、日志、截图或测试数据中包含密钥。
+
+## Local validation / 本地验证
 
 ```bash
-git clone https://github.com/lag-app/self-host.git
-cd lag/self-hosting
-podman compose up -d --build
-# or: docker compose up -d --build
+# Whole application
+docker compose up -d --build
+# Note: provide the required auth/origin environment from docs/guide/configuration.md.
+curl http://localhost:3000/api/health
+
+# API
+cd api && bun install --frozen-lockfile && bun run build && bun run test
+
+# Web
+cd web && bun install --frozen-lockfile && bun run check && bun run build
+
+# Documentation
+cd docs && bun install --frozen-lockfile && bun run docs:build
 ```
 
-Open `http://localhost:3000` to test.
+Run the checks relevant to your change and report exact results in the pull request. Container changes should also verify browser loading, WebSocket chat, and voice from a second network when networking is affected.
 
-## Making Changes
+请运行与改动相关的检查，并在拉取请求中准确记录结果。容器或网络改动还应验证浏览器加载、WebSocket 聊天，以及跨网络语音。
 
-1. Fork the repository
-2. Create a feature branch from `main`
-3. Make your changes
-4. Test locally with `podman compose up -d --build`
-5. Open a pull request
+## Pull requests / 拉取请求
 
-## Pull Requests
+- Explain what changed, why, operational impact, and rollback considerations.
+- Keep application, infrastructure, and documentation claims aligned.
+- Add or update both English and Chinese docs when behavior or operator steps change.
+- Do not combine unrelated formatting or refactoring with a functional change.
+- Contributions are licensed under the repository's [MIT License](LICENSE).
 
-- Keep PRs focused on a single change
-- Include a clear description of what and why
-- Test your changes locally before submitting
-- Follow existing code patterns and conventions
+- 说明改动内容、原因、运维影响和回滚考虑。
+- 保持应用、基础设施与文档描述一致。
+- 行为或运维步骤变化时，同时更新中英文文档。
+- 不要把无关的格式化或重构混入功能改动。
+- 贡献内容采用仓库的 [MIT License](LICENSE)。
 
-## Reporting Bugs
+## Issues and conduct / Issue 与行为准则
 
-Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) when filing issues. Include:
-
-- Steps to reproduce
-- Expected vs actual behavior
-- Container logs (`podman logs lag` or `docker logs lag`)
-- Browser console errors if applicable
-
-## Code Style
-
-- **API**: TypeScript, Fastify 5, Drizzle ORM
-- **Web**: SvelteKit, Svelte 5, Tailwind CSS
-- **Infrastructure**: Dockerfile, s6-overlay, YAML configs
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
+Search existing issues before filing. Include versions, deployment topology, sanitized configuration, reproduction steps, expected/actual behavior, and relevant logs. Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), but note that inherited contact details remain subject to the replacement checklist in [README.md](README.md).

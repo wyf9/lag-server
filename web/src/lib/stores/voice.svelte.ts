@@ -354,7 +354,7 @@ export async function connectToRoom(roomId: string, roomName?: string): Promise<
 				},
 				dtx: false,
 				red: true,
-			},
+			} as NonNullable<ConstructorParameters<typeof Room>[0]>['publishDefaults'],
 		});
 
 		bindEvents(liveKitRoom, roomId);
@@ -452,7 +452,7 @@ export async function toggleScreenShare(): Promise<void> {
 				maxBitrate: 3_000_000,
 				maxFramerate: 30,
 			},
-		});
+		} as Parameters<typeof liveKitRoom.localParticipant.setScreenShareEnabled>[1]);
 		_state = { ..._state, isScreenSharing: !isSharing };
 		syncParticipants();
 	} catch {

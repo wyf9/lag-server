@@ -2,7 +2,9 @@ import type { FastifyPluginAsync } from 'fastify';
 import type { WebSocket } from '@fastify/websocket';
 import { and, eq } from 'drizzle-orm';
 import { voiceRoomParticipants, users } from '../db/schema.js';
-import { verifySessionToken } from '../lib/session.js';
+import { verifySession, SESSION_COOKIE } from '../lib/session.js';
+import { getConfig } from '../config.js';
+import { assertCanEnter, getRoomAccess } from '../lib/room-authorization.js';
 
 interface WsMessage {
   type: string;
@@ -80,6 +82,18 @@ export function broadcastToUser(userId: string, message: WsMessage): void {
   }
 }
 
+export function disconnectUser(userId: string, code = 4003, reason = 'Access changed'): void {
+  const sockets = connectedClients.get(userId);
+  if (!sockets) return;
+  for (const socket of [...sockets]) socket.close(code, reason);
+}
+
+export function disconnectRoomSubscribers(roomId: string, code = 4003, reason = 'Room access changed'): void {
+  const sockets = roomSubscribers.get(roomId);
+  if (!sockets) return;
+  for (const socket of [...sockets]) socket.close(code, reason);
+}
+
 export function isUserConnected(userId: string): boolean {
   return connectedClients.has(userId);
 }
@@ -92,8 +106,8 @@ const STALE_SWEEP_INTERVAL_MS = 120_000;
 
 const wsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/api/ws', { websocket: true }, async (socket, request) => {
-    const url = new URL(request.url, `http://${request.headers.host}`);
-    const token = url.searchParams.get('token');
+    const cookieToken = request.headers.cookie?.split(';').map((value) => value.trim()).find((value) => value.startsWith(`${SESSION_COOKIE}=`))?.slice(SESSION_COOKIE.length + 1);
+    const token = cookieToken ? decodeURIComponent(cookieToken) : undefined;
 
     if (!token) {
       socket.send(JSON.stringify({ type: 'error', message: 'Missing token' }));
@@ -103,8 +117,9 @@ const wsRoutes: FastifyPluginAsync = async (fastify) => {
 
     let userId: string;
     try {
-      const decoded = await verifySessionToken(token);
-      userId = decoded.sub;
+      const decoded = await verifySession(fastify.db, getConfig(), token);
+      if (!decoded) throw new Error('invalid session');
+      userId = decoded.userId;
     } catch {
       socket.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
       socket.close(4001, 'Invalid token');
@@ -129,7 +144,7 @@ const wsRoutes: FastifyPluginAsync = async (fastify) => {
 
     let wsMessageTimestamps: number[] = [];
 
-    socket.on('message', (raw: any) => {
+    socket.on('message', async (raw: any) => {
       const now = Date.now();
       wsMessageTimestamps = wsMessageTimestamps.filter((t) => now - t < WS_RATE_WINDOW_MS);
       wsMessageTimestamps.push(now);
@@ -147,7 +162,15 @@ const wsRoutes: FastifyPluginAsync = async (fastify) => {
             break;
           case 'subscribe_room': {
             const roomId = message.roomId as string;
-            if (roomId) addSocketToRoom(roomId, socket);
+            if (roomId) {
+              try {
+                const access = await getRoomAccess(fastify.db, roomId, userId);
+                assertCanEnter(access);
+                addSocketToRoom(roomId, socket);
+              } catch {
+                socket.send(JSON.stringify({ type: 'error', message: 'Room access denied' }));
+              }
+            }
             break;
           }
           case 'unsubscribe_room': {
@@ -158,7 +181,7 @@ const wsRoutes: FastifyPluginAsync = async (fastify) => {
           case 'typing_start':
           case 'typing_stop': {
             const roomId = message.roomId as string;
-            if (!roomId) break;
+            if (!roomId || !socketToRooms.get(socket)?.has(roomId)) break;
             broadcastToRoom(roomId, {
               type: 'typing',
               roomId,

@@ -1,17 +1,21 @@
 <script lang="ts">
 	import { getVoiceState, connectToRoom, disconnectFromRoom, toggleScreenShare, toggleMute, toggleDeafen } from '$lib/stores/voice.svelte';
-	import { getChatMessages, sendMessage } from '$lib/stores/chat.svelte';
-	import { getSessionState } from '$lib/stores/session.svelte';
-	import { deleteRoom, getRooms } from '$lib/stores/rooms.svelte';
+	import { getChatMessages, getChatPagination, loadOlderMessages, sendMessage } from '$lib/stores/chat.svelte';
+	import { getSessionState, isPlatformAdmin } from '$lib/stores/session.svelte';
+	import { confirmRoomOwnership, deleteRoom, getRooms, leaveRoomMembership, type Room } from '$lib/stores/rooms.svelte';
+	import { dismissRoomAction, getRoomActions } from '$lib/stores/notifications.svelte';
 	import { goto } from '$app/navigation';
 	import ParticipantTile from './participant-tile.svelte';
 	import ScreenShareView from './screen-share-view.svelte';
 	import AudioSettings from './audio-settings.svelte';
+	import RoomManagement from './room-management.svelte';
 
 	let { roomId }: { roomId: string } = $props();
 
 	const voice = $derived(getVoiceState());
 	const messages = $derived(getChatMessages());
+	const pagination = $derived(getChatPagination());
+	const roomActions = $derived(getRoomActions().filter((action) => action.roomId === roomId));
 	const session = $derived(getSessionState());
 
 	let messageInput = $state('');
@@ -20,9 +24,17 @@
 	let showChat = $state(true);
 	let joiningVoice = $state(false);
 	let showAudioSettings = $state(false);
+	let showManagement = $state(false);
+	let roomOverride = $state<Room | null>(null);
+	let actionError = $state('');
+	let initialScrollPending = true;
+	let previousLastMessageId = '';
+	let displayedRoomId = '';
 
 	const isInThisRoom = $derived(voice.roomId === roomId);
-	const roomName = $derived(getRooms().find(r => r.id === roomId)?.name ?? 'Room');
+	const room = $derived(roomOverride ?? getRooms().find(r => r.id === roomId));
+	const roomName = $derived(room?.name ?? 'Room');
+	const canManage = $derived(room?.role === 'owner' || room?.role === 'moderator' || isPlatformAdmin(session.user));
 	const activeScreenShare = $derived(
 		isInThisRoom
 			? voice.participants.find(p => p.screenShareTrack)
@@ -30,12 +42,39 @@
 	);
 
 	$effect(() => {
-		if (messages.length && chatContainer) {
-			requestAnimationFrame(() => {
-				chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-			});
+		if (displayedRoomId !== roomId) {
+			displayedRoomId = roomId;
+			initialScrollPending = true;
+			previousLastMessageId = '';
 		}
 	});
+
+	$effect(() => {
+		const lastId = messages.at(-1)?.id ?? '';
+		if (messages.length && chatContainer && (initialScrollPending || (lastId !== previousLastMessageId && chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 140))) {
+			requestAnimationFrame(() => {
+				chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: initialScrollPending ? 'auto' : 'smooth' });
+				initialScrollPending = false;
+			});
+		}
+		previousLastMessageId = lastId;
+	});
+
+	async function loadOlder() {
+		if (!chatContainer) return;
+		const oldHeight = chatContainer.scrollHeight;
+		await loadOlderMessages(roomId);
+		requestAnimationFrame(() => { if (chatContainer) chatContainer.scrollTop += chatContainer.scrollHeight - oldHeight; });
+	}
+
+	function handleChatScroll() { if (chatContainer && chatContainer.scrollTop < 48 && pagination.nextCursor && !pagination.loading) loadOlder(); }
+
+	async function confirmTransfer(actionId: string) {
+		if (!confirm('Accept ownership of this room? The current owner will become a moderator.')) return;
+		actionError = '';
+		try { await confirmRoomOwnership(roomId); dismissRoomAction(actionId); roomOverride = room ? { ...room, role: 'owner' } : null; }
+		catch (cause) { actionError = cause instanceof Error ? cause.message : 'Unable to confirm ownership'; }
+	}
 
 	async function handleSendMessage(e: Event) {
 		e.preventDefault();
@@ -67,6 +106,15 @@
 		} catch {}
 		showDeleteConfirm = false;
 	}
+
+	async function handlePersistentLeave() {
+		try {
+			if (voice.roomId === roomId) await disconnectFromRoom();
+			await leaveRoomMembership(roomId);
+			goto('/rooms');
+		} catch {}
+	}
+
 </script>
 
 {#if isInThisRoom && voice.status === 'connected'}
@@ -193,8 +241,11 @@
 					<div class="px-3 py-2 border-b border-border text-sm font-medium text-foreground">Chat</div>
 					<div
 						bind:this={chatContainer}
+						onscroll={handleChatScroll}
 						class="flex-1 overflow-y-auto px-3 py-2 space-y-2"
 					>
+						{#if pagination.nextCursor}<div class="text-center"><button disabled={pagination.loading} onclick={loadOlder} class="rounded-full border border-border px-3 py-1 text-xs text-text-muted disabled:opacity-50">{pagination.loading ? 'Loading...' : 'Load older'}</button></div>{/if}
+						{#if pagination.error}<p class="text-center text-xs text-lag-danger">{pagination.error}</p>{/if}
 						{#if messages.length === 0}
 							<p class="text-center text-xs text-text-muted py-4">No messages yet</p>
 						{/if}
@@ -239,8 +290,14 @@
 	<!-- CHAT ONLY: Original layout -->
 	<div class="flex flex-1 flex-col overflow-hidden">
 		<!-- Header -->
+		{#if roomActions.length || actionError}<div class="space-y-2 border-b border-border bg-surface px-4 py-3">{#each roomActions as action (action.id)}<div class="flex flex-wrap items-center gap-2 text-sm"><span class="flex-1 text-text-secondary">{action.type === 'ownership-transfer' ? 'You have a pending ownership transfer for this room.' : `You were invited to this room as ${action.role ?? 'a member'}.`}</span>{#if action.type === 'ownership-transfer'}<button onclick={() => confirmTransfer(action.id)} class="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground">Accept ownership</button>{/if}<button onclick={() => dismissRoomAction(action.id)} class="text-xs text-text-muted">Dismiss</button></div>{/each}{#if actionError}<p class="text-xs text-lag-danger">{actionError}</p>{/if}</div>{/if}
 		<div class="flex items-center justify-between border-b border-border px-4 py-3">
 			<h2 class="text-lg font-heading text-foreground">{roomName}</h2>
+			<div class="flex items-center gap-2">
+				{#if room?.role}<span class="rounded-full bg-surface px-2 py-1 text-xs text-text-muted">{room.role}</span>{/if}
+				{#if canManage}<button onclick={() => showManagement = true} class="rounded-md border border-border px-2.5 py-1.5 text-xs text-text-secondary hover:bg-surface">Settings & members</button>{/if}
+				{#if room?.role && room.role !== 'owner'}<button onclick={handlePersistentLeave} title="Disconnect and remove your room membership" class="rounded-md px-2.5 py-1.5 text-xs text-lag-danger hover:bg-lag-danger-dim">Leave room</button>{/if}
+			</div>
 		</div>
 
 		<!-- Connecting indicator -->
@@ -253,8 +310,11 @@
 		<!-- Chat messages -->
 		<div
 			bind:this={chatContainer}
+			onscroll={handleChatScroll}
 			class="flex-1 overflow-y-auto px-4 py-3 space-y-3"
 		>
+			{#if pagination.nextCursor}<div class="text-center"><button disabled={pagination.loading} onclick={loadOlder} class="rounded-full border border-border px-3 py-1 text-xs text-text-muted disabled:opacity-50">{pagination.loading ? 'Loading...' : 'Load older messages'}</button></div>{/if}
+			{#if pagination.error}<p class="text-center text-xs text-lag-danger">{pagination.error}</p>{/if}
 			{#if messages.length === 0}
 				<p class="text-center text-sm text-text-muted py-8">No messages yet</p>
 			{/if}
@@ -318,9 +378,14 @@
 	<AudioSettings onclose={() => showAudioSettings = false} />
 {/if}
 
+{#if showManagement && room}
+	<RoomManagement room={room} onclose={() => showManagement = false} onupdated={(updated) => roomOverride = updated} />
+{/if}
+
 {#if showDeleteConfirm}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div
+		role="presentation"
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
 		onclick={(e) => { if (e.target === e.currentTarget) showDeleteConfirm = false; }}
 	>
