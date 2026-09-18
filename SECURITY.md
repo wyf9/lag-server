@@ -6,7 +6,8 @@ Do **not** open a public issue or discussion. Send the report privately to:
 
 请**不要**创建公开 issue 或 discussion。请将报告私下发送至：
 
-> `security@wyf9.top`
+> **<security@wyf9.top>**
+> OR **[wyf9.top/contact](https://wyf9.top/contact)** for other contact methods (其他联系方式)
 
 Include the affected version or commit, deployment assumptions, reproduction steps or proof of concept, impact, and any suggested mitigation. Do not include production credentials or personal data. No acknowledgement or remediation deadline is guaranteed.
 
@@ -34,4 +35,4 @@ No formal support window has been declared. Treat the default branch as developm
 - 备份并实际演练恢复 `lag_data`；及时更新宿主机、容器运行时、基础镜像、Node.js 依赖、PostgreSQL 和 LiveKit。
 - 将房间消息、昵称、IP 地址、会话令牌、语音令牌和日志视为敏感数据。
 
-See the [operator guide](docs/guide/operations.md) / 参阅[运维指南](docs/zh/guide/operations.md)。
+See the [operator guide](https://lag.p.wyf9.top/guide/operations) / 参阅[运维指南](https://lag.p.wyf9.top/zh/guide/operations)。
