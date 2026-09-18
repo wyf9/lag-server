@@ -1,0 +1,11 @@
+# Build the image from local source instead of pulling the published
+# GHCR image. Rename this file to `compose.override.yml` (Docker Compose
+# merges it automatically), then run `docker compose up -d --build`.
+#
+# 从本地源码构建镜像，而不是拉取已发布的 GHCR 镜像。请将本文件重命名为
+# `compose.override.yml`（Docker Compose 会自动合并），然后运行
+# `docker compose up -d --build`。
+services:
+  lag:
+    image: lag-server:local
+    build: .

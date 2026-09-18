@@ -1,18 +1,27 @@
 # 部署与网络
 
-## 构建并启动
+## 使用已发布镜像启动
 
-从已检出的源码构建：
+`compose.yml` 默认拉取已发布镜像 `ghcr.io/wyf9/lag-server:latest`。生产环境应固定版本标签或摘要，不要依赖 `latest`：
 
 ```bash
 # 先通过部署环境提供 ALLOWED_HOSTS、AUTH_PROVIDER、AUTH_CLIENT_ID
 # 与提供商特定值。
-docker compose up -d --build
+docker compose up -d
 docker compose ps
 curl --fail http://localhost:3000/api/health
 ```
 
-也可以使用已发布镜像 `ghcr.io/wyf9/lag-server:latest`。生产环境应固定版本标签或摘要，不要依赖 `latest`。
+## 从本地源码构建
+
+若要从已检出的源码构建而非拉取已发布镜像，请将 `compose-build.override.yml` 重命名为 `compose.override.yml`。Docker Compose 会自动合并它并构建本地镜像：
+
+```bash
+mv compose-build.override.yml compose.override.yml
+docker compose up -d --build
+```
+
+删除 `compose.override.yml` 即可恢复使用已发布镜像。
 
 将 `/var/lib/postgresql/data` 放在持久化存储上。内置拓扑面向单容器，而非 Kubernetes 风格的独立副本。仓库中的 Compose 文件不是完整生产配置，目前缺少必需认证值。
 

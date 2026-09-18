@@ -13,7 +13,7 @@ The production image runs four long-lived services under s6-overlay:
 3. PostgreSQL 16 stores users, rooms, participants, and messages under `/var/lib/postgresql/data`.
 4. LiveKit listens on TCP `7880-7881` and UDP `50000-50200` for signaling and media.
 
-The API auto-applies its schema at startup. The all-in-one image assumes local loopback links among services. `docker-compose.yml` persists only PostgreSQL data in `lag_data`.
+The API auto-applies its schema at startup. The all-in-one image assumes local loopback links among services. `compose.yml` persists only PostgreSQL data in `lag_data`.
 
 ## Trust and identity model
 
@@ -28,7 +28,7 @@ The API auto-applies its schema at startup. The all-in-one image assumes local l
 - `web/`: SvelteKit/Svelte 5 client and Node adapter output.
 - `api/`: Fastify 5 API, Drizzle schema, session signing, WebSocket state, and LiveKit token issuance.
 - `s6/`, `Dockerfile`, `entrypoint-web.js`, `livekit.yaml`: all-in-one runtime and process wiring.
-- `scripts/`, `docker-compose.yml`: convenience deployment paths using the fork's GHCR image or a local build.
+- `scripts/`, `compose.yml`, `compose-build.override.yml`: convenience deployment paths using the fork's GHCR image or a local build.
 - `docs/`: bilingual VitePress operator/developer documentation and its separate Bun toolchain.
 
 ## Operational invariants

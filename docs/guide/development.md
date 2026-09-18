@@ -6,14 +6,16 @@
 - Docker, Podman, or nerdctl for the integrated runtime
 - A PostgreSQL instance when running the API outside the container
 
-Clone the canonical fork repository. The safest integrated setup is:
+Clone the canonical fork repository. The safest integrated setup pulls the published image:
 
 ```bash
 git clone https://github.com/wyf9/lag-server.git
 cd lag-server
-docker compose up -d --build
+docker compose up -d
 curl http://localhost:3000/api/health
 ```
+
+To build the checked-out source instead, rename `compose-build.override.yml` to `compose.override.yml` and run `docker compose up -d --build`.
 
 ## Component commands
 

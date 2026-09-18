@@ -1,6 +1,6 @@
 services:
   lag:
-    build: .
+    image: ${LAG_IMAGE:-ghcr.io/wyf9/lag-server:latest}
     ports:
       - "${LAG_BIND_ADDRESS:-127.0.0.1}:3000:3000"
       - "${LAG_BIND_ADDRESS:-127.0.0.1}:7880:7880"

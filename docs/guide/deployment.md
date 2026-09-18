@@ -1,20 +1,29 @@
 # Deployment and networking
 
-## Build and start
+## Start from the published image
 
-Build the checked-out source:
+`compose.yml` pulls the published image `ghcr.io/wyf9/lag-server:latest` by default. Pin a release tag or digest for production rather than relying on `latest`:
 
 ```bash
 # First supply ALLOWED_HOSTS, AUTH_PROVIDER, AUTH_CLIENT_ID, and
 # provider-specific values through your deployment environment.
-docker compose up -d --build
+docker compose up -d
 docker compose ps
 curl --fail http://localhost:3000/api/health
 ```
 
-Alternatively, use the published image `ghcr.io/wyf9/lag-server:latest`. Pin a release tag or digest for production rather than relying on `latest`.
+## Build from local source
 
-Persist `/var/lib/postgresql/data` on durable storage. The bundled topology is intended for one container, not Kubernetes-style independent replicas. The checked-in Compose file is not a complete production configuration and currently omits required authentication values.
+To build the checked-out source instead of pulling the published image, rename `compose-build.override.yml` to `compose.override.yml`. Docker Compose merges it automatically and builds the local image:
+
+```bash
+mv compose-build.override.yml compose.override.yml
+docker compose up -d --build
+```
+
+Remove `compose.override.yml` to go back to the published image.
+
+Persist `/var/lib/postgresql/data` on durable storage. The bundled topology is intended for one container, not Kubernetes-style independent replicas. The checked-in Compose files are not a complete production configuration and currently omit required authentication values.
 
 ## Port map
 

@@ -17,7 +17,8 @@ Contributions to this independent fork are welcome. 本独立分支欢迎贡献�
 ## Local validation / 本地验证
 
 ```bash
-# Whole application
+# Whole application (build from local source)
+mv compose-build.override.yml compose.override.yml
 docker compose up -d --build
 # Note: provide the required auth/origin environment from docs/guide/configuration.md.
 curl http://localhost:3000/api/health

@@ -49,7 +49,7 @@ inventory/*.yml
 !inventory/*.example.yml
 
 # Docker
-docker-compose.override.yml
+compose.override.yml
 
 # SvelteKit
 .svelte-kit/

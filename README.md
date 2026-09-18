@@ -6,16 +6,20 @@ An independently maintained fork of Lag's self-hosted voice and chat server. The
 
 ## Start / 启动
 
-Clone this fork and either build locally or use its GHCR image:
+Clone this fork and either pull its GHCR image (default) or build locally:
 
-克隆本分支后，可从源码构建或使用其 GHCR 镜像：
+克隆本分支后，可直接拉取其 GHCR 镜像（默认）或从源码构建：
 
 ```bash
 git clone https://github.com/wyf9/lag-server.git
 cd lag-server
 # Configure the required identity-provider values documented at lag.p.wyf9.top
-docker compose up -d --build
+docker compose up -d
 ```
+
+To build the local source instead, rename `compose-build.override.yml` to `compose.override.yml`, then run `docker compose up -d --build`.
+
+若要从本地源码构建，请将 `compose-build.override.yml` 重命名为 `compose.override.yml`，然后运行 `docker compose up -d --build`。
 
 Published image / 已发布镜像：`ghcr.io/wyf9/lag-server:latest`
 

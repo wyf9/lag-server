@@ -6,14 +6,16 @@
 - 用于集成运行的 Docker、Podman 或 nerdctl
 - 在容器外运行 API 时所需的 PostgreSQL 实例
 
-克隆本分支的规范仓库。最稳妥的集成开发方式是：
+克隆本分支的规范仓库。最稳妥的集成开发方式是拉取已发布镜像：
 
 ```bash
 git clone https://github.com/wyf9/lag-server.git
 cd lag-server
-docker compose up -d --build
+docker compose up -d
 curl http://localhost:3000/api/health
 ```
+
+若要从已检出的源码构建，请将 `compose-build.override.yml` 重命名为 `compose.override.yml`，然后运行 `docker compose up -d --build`。
 
 ## 组件命令
 
