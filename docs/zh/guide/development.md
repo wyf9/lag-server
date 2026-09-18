@@ -2,7 +2,7 @@
 
 ## 前置条件
 
-- Bun 1.3.14（生产应用运行时仍为 Node.js 20）
+- Bun 1.3.14（生产应用运行时同为 Bun）
 - 用于集成运行的 Docker、Podman 或 nerdctl
 - 在容器外运行 API 时所需的 PostgreSQL 实例
 

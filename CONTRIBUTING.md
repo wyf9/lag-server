@@ -4,12 +4,12 @@ Contributions to this independent fork are welcome. 本独立分支欢迎贡献�
 
 ## Before opening a change / 提交更改前
 
-1. Read [CONTEXT.md](CONTEXT.md) and the [development guide](docs/guide/development.md).
+1. Read [CONTEXT.md](CONTEXT.md) and the [development guide](https://lag.p.wyf9.top/guide/development).
 2. Create a focused branch from the repository's default branch.
 3. Keep fork links and identifiers aligned with `https://github.com/wyf9/lag-server`, `ghcr.io/wyf9/lag-server`, `https://lag.p.wyf9.top`, and `security@wyf9.top`.
 4. Keep secrets out of commits, examples, logs, screenshots, and fixtures.
 
-1. 阅读 [CONTEXT.md](CONTEXT.md) 与[开发指南](docs/zh/guide/development.md)。
+1. 阅读 [CONTEXT.md](CONTEXT.md) 与[开发指南](https://lag.p.wyf9.top/zh/guide/development)。
 2. 从仓库默认分支创建目标单一的分支。
 3. 保持分支链接和标识与 `https://github.com/wyf9/lag-server`、`ghcr.io/wyf9/lag-server`、`https://lag.p.wyf9.top` 和 `security@wyf9.top` 一致。
 4. 不要在提交、示例、日志、截图或测试数据中包含密钥。

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Bun 1.3.14 (Node.js 20 remains the production application runtime)
+- Bun 1.3.14 (also the production application runtime)
 - Docker, Podman, or nerdctl for the integrated runtime
 - A PostgreSQL instance when running the API outside the container
 

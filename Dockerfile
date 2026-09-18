@@ -24,15 +24,17 @@ ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Node.js 20 + PostgreSQL 16
+# Install PostgreSQL 16 (Bun is copied from the builder stage below)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates xz-utils gnupg lsb-release \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg \
     && apt-get update \
-    && apt-get install -y --no-install-recommends nodejs postgresql-16 \
+    && apt-get install -y --no-install-recommends postgresql-16 \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy the Bun runtime from the builder stage
+COPY --from=api-builder /usr/local/bin/bun /usr/local/bin/bun
 
 # Install s6-overlay
 RUN curl -fsSL "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" | tar Jxf - -C / \
@@ -168,7 +170,7 @@ RUN echo "longrun" > /etc/s6-overlay/s6-rc.d/livekit/type \
 # API startup script
 COPY <<'APISTART' /usr/local/bin/start-api.sh
 #!/bin/bash
-exec /usr/bin/node /app/api/dist/server.js
+exec /usr/local/bin/bun /app/api/dist/server.js
 APISTART
 RUN chmod +x /usr/local/bin/start-api.sh
 
